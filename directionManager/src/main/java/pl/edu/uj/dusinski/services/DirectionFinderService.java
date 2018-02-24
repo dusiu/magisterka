@@ -10,18 +10,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
+import pl.edu.uj.dusinski.JmsPublisher;
 import pl.edu.uj.dusinski.WebDriverMangerService;
 import pl.edu.uj.dusinski.dao.AirportDetails;
 import pl.edu.uj.dusinski.dao.Direction;
-import pl.edu.uj.dusinski.dao.DirectionRefreshDetails;
-import pl.edu.uj.dusinski.jpa.AirportRepository;
-import pl.edu.uj.dusinski.jpa.DirectionRefreshDetailsRepository;
-import pl.edu.uj.dusinski.jpa.DirectionRepository;
 
-import java.time.LocalDateTime;
 import java.util.*;
 
-import static pl.edu.uj.dusinski.dao.Airline.WIZZIAR;
+import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
 
 @Service
 @DependsOn("webDriverMangerService")
@@ -33,26 +29,18 @@ public class DirectionFinderService {
     private static final String WIZZIAR_FLIGHTS = "https://wizzair.com/en-gb/flights";
     private static final int WAIT_TIMEOUT = 30;
     private final WebDriverMangerService webDriverMangerService;
-    private final AirportRepository airportRepository;
-    private final DirectionRepository directionRepository;
-    private final DirectionRefreshDetailsRepository directionRefreshDetails;
+    private final JmsPublisher jmsPublisher;
 
     @Autowired
-    public DirectionFinderService(WebDriverMangerService webDriverMangerService,
-                                  AirportRepository airportRepository,
-                                  DirectionRepository directionRepository,
-                                  DirectionRefreshDetailsRepository directionRefreshDetails) {
+    public DirectionFinderService(WebDriverMangerService webDriverMangerService, JmsPublisher jmsPublisher) {
         this.webDriverMangerService = webDriverMangerService;
-        this.airportRepository = airportRepository;
-        this.directionRepository = directionRepository;
-        this.directionRefreshDetails = directionRefreshDetails;
+        this.jmsPublisher = jmsPublisher;
     }
 
     public void updateDirections() {
         LOGGER.info("Updating list of the directions");
 
         WebDriver phantomJs = null;
-        List<AirportDetails> airportsDetails = new ArrayList<>();
         List<Direction> directions = new ArrayList<>();
         try {
             phantomJs = webDriverMangerService.getFreePhantomJs();
@@ -65,15 +53,9 @@ public class DirectionFinderService {
             int i = 0;
 //            airportsUrlNameList = airportsUrlNameList.subList(0, 20);
             for (Map.Entry<String, String> airportUrlName : airportsUrlNameList) {
-                directions.addAll(getAirportDirections(airportUrlName.getKey(), airportUrlName.getValue(), phantomJs, airportsDetails));
+                directions.addAll(getAirportDirections(airportUrlName.getKey(), airportUrlName.getValue(), phantomJs));
                 LOGGER.info("Checked {} from {} airports", ++i, airportsUrlNameList.size());
             }
-            LOGGER.info("Updated {} directions", directions.size());
-            airportRepository.deleteAll();
-            airportRepository.saveAll(airportsDetails);
-            directionRepository.deleteAll();
-            directionRepository.saveAll(directions);
-            directionRefreshDetails.save(new DirectionRefreshDetails(directionRefreshDetails.count(), LocalDateTime.now(), directions.size()));
         } catch (Exception e) {
             LOGGER.error("Exception during updating directions", e);
         } finally {
@@ -98,7 +80,7 @@ public class DirectionFinderService {
                 .until(ExpectedConditions.elementToBeClickable(by));
     }
 
-    private List<Direction> getAirportDirections(String airportUrl, String airportName, WebDriver phantomJs, List<AirportDetails> airportsDetails) {
+    private List<Direction> getAirportDirections(String airportUrl, String airportName, WebDriver phantomJs) {
         LOGGER.info("checking airport: {} with url: {}", airportName, airportUrl);
         try {
             List<Direction> directions = new ArrayList<>();
@@ -108,7 +90,7 @@ public class DirectionFinderService {
             String airportFullName = fullNameWithCode.substring(0, fullNameWithCode.lastIndexOf(OPEN_BRACKET));
             String fromCode = fullNameWithCode
                     .substring(fullNameWithCode.lastIndexOf(OPEN_BRACKET) + 1, fullNameWithCode.lastIndexOf(CLOSE_BRACKET));
-            airportsDetails.add(new AirportDetails(airportName, airportFullName, "", fromCode, WIZZIAR));
+            jmsPublisher.pusblishAirportDetails(new AirportDetails(airportName, airportFullName, "", fromCode, WIZZAIR));
             waitUntilElementIsReady(phantomJs, By.id("search-departure-station"));
             phantomJs.findElement(By.id("search-departure-station")).click();
             waitUntilElementIsReady(phantomJs, By.className("locations-container__location"));
@@ -117,7 +99,7 @@ public class DirectionFinderService {
                 String[] toAirportDetails = toAirport.getText().split("\\s");
                 String toCode = toAirportDetails[toAirportDetails.length - 1];
                 if (!toCode.isEmpty()) {
-                    directions.add(new Direction(fromCode + toCode, fromCode, toCode, WIZZIAR));
+                    jmsPublisher.publishDirection(new Direction(fromCode + toCode + WIZZAIR.getValue(), fromCode, toCode, WIZZAIR));
                 }
             }
             return directions;

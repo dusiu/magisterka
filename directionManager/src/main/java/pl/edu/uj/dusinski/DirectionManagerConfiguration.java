@@ -23,8 +23,6 @@ import javax.jms.JMSException;
 @Configuration
 public class DirectionManagerConfiguration {
 
-    @Autowired
-    JmsTemplate jmsTemplate;
     @Value("${phantomJs.instances:0}")
     int phantomJsInstances;
 
@@ -41,27 +39,6 @@ public class DirectionManagerConfiguration {
     @Bean
     public WebDriverMangerService webDriverMangerService() {
         return new WebDriverMangerService(phantomJsInstances);
-    }
-
-    @Bean
-    public JmsListenerContainerFactory<?> jmsListenerFactory(ConnectionFactory connectionFactory,
-                                                             DefaultJmsListenerContainerFactoryConfigurer configurer) throws JMSException {
-        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        configurer.configure(factory, connectionFactory);
-        return factory;
-    }
-
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        return new ActiveMQConnectionFactory("tcp://localhost:61616");
-    }
-
-    @Bean
-    public MessageConverter jacksonJmsMessageConverter() {
-        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
-        converter.setTargetType(MessageType.TEXT);
-        converter.setTypeIdPropertyName("_type");
-        return converter;
     }
 
 }

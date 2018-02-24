@@ -35,28 +35,4 @@ public class DatabaseManagerConfiguration {
         return new MongoTemplate(mongoDbFactory());
     }
 
-    @Bean
-    public JmsListenerContainerFactory<?> jmsListenerFactory(ConnectionFactory connectionFactory,
-                                                             DefaultJmsListenerContainerFactoryConfigurer configurer) throws JMSException {
-        DefaultJmsListenerContainerFactory factory = new DefaultJmsListenerContainerFactory();
-        configurer.configure(factory, connectionFactory);
-        return factory;
-    }
-
-    @Bean
-    public ConnectionFactory connectionFactory() {
-        return new ActiveMQConnectionFactory("tcp://localhost:61616");
-    }
-
-    @Bean
-    public MessageConverter jacksonJmsMessageConverter() {
-        MappingJackson2MessageConverter converter = new MappingJackson2MessageConverter();
-        converter.setTargetType(MessageType.TEXT);
-        converter.setTypeIdPropertyName("_type");
-        return converter;
-    }
-
-    public void test() {
-//        jmsTemplate.convertAndSend("mailbox", new Email("info@example.com", "Hello"));
-    }
 }

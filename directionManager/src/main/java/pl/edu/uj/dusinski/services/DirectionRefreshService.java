@@ -2,37 +2,42 @@ package pl.edu.uj.dusinski.services;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 import pl.edu.uj.dusinski.dao.DirectionRefreshDetails;
-import pl.edu.uj.dusinski.jpa.DirectionRefreshDetailsRepository;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
 
 @Service
 @EnableScheduling
 public class DirectionRefreshService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectionRefreshService.class);
 
+    public final String databaseManagerUrl;
     private final DirectionFinderService directionFinderService;
-    private final DirectionRefreshDetailsRepository directionRefreshDetailsRepository;
+    private final RestTemplate restTemplate;
 
-    public DirectionRefreshService(DirectionFinderService directionFinderService, DirectionRefreshDetailsRepository directionRefreshDetailsRepository) {
+    public DirectionRefreshService(DirectionFinderService directionFinderService, RestTemplate restTemplate, @Value("${database.manager.url}") String databaseManagerUrl) {
+        this.databaseManagerUrl = databaseManagerUrl;
         this.directionFinderService = directionFinderService;
-        this.directionRefreshDetailsRepository = directionRefreshDetailsRepository;
+        this.restTemplate = restTemplate;
     }
 
-    @Scheduled(fixedRate = 10000)
+    @Scheduled(fixedDelay = 10000)
     public void updateDirectionIfNeeded() {
         LOGGER.info("Checking if we want to update directions");
-        Optional<DirectionRefreshDetails> latest = directionRefreshDetailsRepository.findById(directionRefreshDetailsRepository.count() - 1);
-        boolean b = latest.isPresent() && latest.get().getUpdatingTime().minusWeeks(1).isAfter(LocalDateTime.now());
+        DirectionRefreshDetails latest = restTemplate
+                .getForObject(databaseManagerUrl + "/directionManager/lastUpdatedTimeWizzair", DirectionRefreshDetails.class);
+
+        boolean b = latest != null && LocalDateTime.now().minusWeeks(1).isAfter(latest.getUpdatingTime());
 //        if (!latest.isPresent() || true) {
-        if (!latest.isPresent() || b) {
+        if (b) {
             LOGGER.info("Updating direction list");
             directionFinderService.updateDirections();
+            restTemplate.getForObject(databaseManagerUrl + "/directionManager/updateNewDirections/WIZZAIR", String.class);
         }
     }
 }
