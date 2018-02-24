@@ -12,8 +12,7 @@ public enum Airline {
     @JsonProperty("wizzair")
     WIZZAIR("wizzair"),
     @JsonProperty("unknown")
-    UNKNOWN("unknown"),
-    WIZZIAR("asd");
+    UNKNOWN("unknown");
 
     private final String value;
 

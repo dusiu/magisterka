@@ -2,6 +2,8 @@ package pl.edu.uj.dusinski.dao;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.apache.commons.lang3.builder.EqualsBuilder;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 import org.springframework.data.annotation.Id;
@@ -47,5 +49,31 @@ public class DirectionRefreshDetails {
     @Override
     public String toString() {
         return ToStringBuilder.reflectionToString(this, ToStringStyle.JSON_STYLE);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+
+        if (o == null || getClass() != o.getClass()) return false;
+
+        DirectionRefreshDetails that = (DirectionRefreshDetails) o;
+
+        return new EqualsBuilder()
+                .append(id, that.id)
+                .append(updatedDirectionsNumber, that.updatedDirectionsNumber)
+                .append(updatingTime, that.updatingTime)
+                .append(airline, that.airline)
+                .isEquals();
+    }
+
+    @Override
+    public int hashCode() {
+        return new HashCodeBuilder(17, 37)
+                .append(id)
+                .append(updatingTime)
+                .append(updatedDirectionsNumber)
+                .append(airline)
+                .toHashCode();
     }
 }

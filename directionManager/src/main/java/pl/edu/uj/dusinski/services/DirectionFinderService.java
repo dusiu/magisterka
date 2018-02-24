@@ -41,7 +41,6 @@ public class DirectionFinderService {
         LOGGER.info("Updating list of the directions");
 
         WebDriver phantomJs = null;
-        List<Direction> directions = new ArrayList<>();
         try {
             phantomJs = webDriverMangerService.getFreePhantomJs();
             List<WebElement> airports = getAirports(phantomJs);
@@ -53,7 +52,7 @@ public class DirectionFinderService {
             int i = 0;
 //            airportsUrlNameList = airportsUrlNameList.subList(0, 20);
             for (Map.Entry<String, String> airportUrlName : airportsUrlNameList) {
-                directions.addAll(getAirportDirections(airportUrlName.getKey(), airportUrlName.getValue(), phantomJs));
+                getAirportDirections(airportUrlName.getKey(), airportUrlName.getValue(), phantomJs);
                 LOGGER.info("Checked {} from {} airports", ++i, airportsUrlNameList.size());
             }
         } catch (Exception e) {

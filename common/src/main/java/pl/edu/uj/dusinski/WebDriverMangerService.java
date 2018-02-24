@@ -1,7 +1,7 @@
 package pl.edu.uj.dusinski;
 
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.slf4j.Logger;
@@ -17,12 +17,14 @@ public class WebDriverMangerService {
     private int MAXIMUM_CAPACITY = 8;
     private BlockingQueue<WebDriver> webDrivers = new ArrayBlockingQueue<>(MAXIMUM_CAPACITY);
     private final String phantomPath = System.getProperty("user.dir") + "\\common\\src\\main\\resources\\phantomjs.exe";
+    private final String chromePath = System.getProperty("user.dir") + "\\common\\src\\main\\resources\\chromedriver.exe";
 
     public WebDriverMangerService(int phantomJsNumber) {
         if (phantomJsNumber > 0) {
             this.webDrivers = new ArrayBlockingQueue<>(phantomJsNumber);
         }
         System.setProperty("phantomjs.binary.path", phantomPath);
+        System.setProperty("webdriver.chrome.driver", chromePath);
         System.setProperty("webdriver.gecko.driver", "C:\\tools\\phantomJs\\bin\\geckodriver.exe");
         DesiredCapabilities dcap = new DesiredCapabilities();
         String[] phantomArgs = new String[]{
@@ -31,7 +33,8 @@ public class WebDriverMangerService {
         dcap.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, phantomArgs);
         for (int i = 0; i < phantomJsNumber; i++) {
 //            webDrivers.add(new FirefoxDriver());
-            webDrivers.add(new PhantomJSDriver(dcap));
+//            webDrivers.add(new PhantomJSDriver(dcap));
+            webDrivers.add(new ChromeDriver());
         }
     }
 

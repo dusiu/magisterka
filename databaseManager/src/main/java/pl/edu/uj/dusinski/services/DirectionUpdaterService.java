@@ -10,8 +10,8 @@ import pl.edu.uj.dusinski.jpa.DirectionRefreshDetailsRepository;
 import pl.edu.uj.dusinski.jpa.DirectionRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
 
@@ -19,7 +19,7 @@ import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
 public class DirectionUpdaterService {
     private static final Logger LOGGER = LoggerFactory.getLogger(DirectionUpdaterService.class);
 
-    private final List<Direction> directions = new ArrayList<>();
+    private final Set<Direction> directions = new HashSet<>();
     private final DirectionRepository directionRepository;
     private final DirectionRefreshDetailsRepository refreshDetailsRepository;
 
@@ -35,8 +35,8 @@ public class DirectionUpdaterService {
             return;
         }
         directionRepository.saveAll(directions);
-        directions.clear();
         LOGGER.info("There are {} new direction in database", directions.size());
+        directions.clear();
         refreshDetailsRepository.save(new DirectionRefreshDetails(refreshDetailsRepository.count(), LocalDateTime.now(), directions.size(), WIZZAIR));
     }
 
