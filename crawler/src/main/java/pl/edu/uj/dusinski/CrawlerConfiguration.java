@@ -5,7 +5,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class DirectionManagerConfiguration {
+public class CrawlerConfiguration {
 
     @Value("${web.driver.instances}")
     int webDriverInstances;
@@ -14,5 +14,4 @@ public class DirectionManagerConfiguration {
     public WebDriverMangerService webDriverMangerService() {
         return new WebDriverMangerService(webDriverInstances);
     }
-
 }

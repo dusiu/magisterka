@@ -23,7 +23,7 @@ import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
 @DependsOn("webDriverMangerService")
 public class DirectionFinderService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebDriverMangerService.class);
+    private static final Logger Log = LoggerFactory.getLogger(DirectionFinderService.class);
     private static final String OPEN_BRACKET = "(";
     private static final String CLOSE_BRACKET = ")";
     private static final String WIZZIAR_FLIGHTS = "https://wizzair.com/en-gb/flights";
@@ -38,12 +38,12 @@ public class DirectionFinderService {
     }
 
     public void updateDirections() {
-        LOGGER.info("Updating list of the directions");
+        Log.info("Updating list of the directions");
 
-        WebDriver phantomJs = null;
+        WebDriver webDriver = null;
         try {
-            phantomJs = webDriverMangerService.getFreePhantomJs();
-            List<WebElement> airports = getAirports(phantomJs);
+            webDriver = webDriverMangerService.getFreeWebDriver();
+            List<WebElement> airports = getAirports(webDriver);
             List<Map.Entry<String, String>> airportsUrlNameList = new ArrayList<>();
             for (WebElement airport : airports) {
                 airportsUrlNameList.add(
@@ -52,21 +52,21 @@ public class DirectionFinderService {
             int i = 0;
 //            airportsUrlNameList = airportsUrlNameList.subList(0, 20);
             for (Map.Entry<String, String> airportUrlName : airportsUrlNameList) {
-                getAirportDirections(airportUrlName.getKey(), airportUrlName.getValue(), phantomJs);
-                LOGGER.info("Checked {} from {} airports", ++i, airportsUrlNameList.size());
+                getAirportDirections(airportUrlName.getKey(), airportUrlName.getValue(), webDriver);
+                Log.info("Checked {} from {} airports", ++i, airportsUrlNameList.size());
             }
         } catch (Exception e) {
-            LOGGER.error("Exception during updating directions", e);
+            Log.error("Exception during updating directions", e);
         } finally {
-            webDriverMangerService.returnPhantomJs(phantomJs);
+            webDriverMangerService.returnWebDriver(webDriver);
         }
     }
 
-    private List<WebElement> getAirports(WebDriver phantomJs) {
-        phantomJs.get(WIZZIAR_FLIGHTS);
+    private List<WebElement> getAirports(WebDriver webDriver) {
+        webDriver.get(WIZZIAR_FLIGHTS);
         By elem = By.className("list--destinations-cities");
-        waitUntilElementIsReady(phantomJs, elem);
-        List<WebElement> countries = phantomJs.findElements(elem);
+        waitUntilElementIsReady(webDriver, elem);
+        List<WebElement> countries = webDriver.findElements(elem);
         List<WebElement> airports = new ArrayList<>();
         for (WebElement country : countries) {
             airports.addAll(country.findElements(By.tagName("a")));
@@ -79,21 +79,21 @@ public class DirectionFinderService {
                 .until(ExpectedConditions.elementToBeClickable(by));
     }
 
-    private List<Direction> getAirportDirections(String airportUrl, String airportName, WebDriver phantomJs) {
-        LOGGER.info("checking airport: {} with url: {}", airportName, airportUrl);
+    private List<Direction> getAirportDirections(String airportUrl, String airportName, WebDriver webDriver) {
+        Log.info("checking airport: {} with url: {}", airportName, airportUrl);
         try {
             List<Direction> directions = new ArrayList<>();
-            phantomJs.get(airportUrl);
-            waitUntilElementIsReady(phantomJs, By.className("gr-7"));
-            String fullNameWithCode = phantomJs.findElement(By.className("gr-7")).getText().split("\\n")[0];
+            webDriver.get(airportUrl);
+            waitUntilElementIsReady(webDriver, By.className("gr-7"));
+            String fullNameWithCode = webDriver.findElement(By.className("gr-7")).getText().split("\\n")[0];
             String airportFullName = fullNameWithCode.substring(0, fullNameWithCode.lastIndexOf(OPEN_BRACKET));
             String fromCode = fullNameWithCode
                     .substring(fullNameWithCode.lastIndexOf(OPEN_BRACKET) + 1, fullNameWithCode.lastIndexOf(CLOSE_BRACKET));
             jmsPublisher.pusblishAirportDetails(new AirportDetails(airportName, airportFullName, "", fromCode, WIZZAIR));
-            waitUntilElementIsReady(phantomJs, By.id("search-departure-station"));
-            phantomJs.findElement(By.id("search-departure-station")).click();
-            waitUntilElementIsReady(phantomJs, By.className("locations-container__location"));
-            List<WebElement> toAirports = phantomJs.findElements(By.className("locations-container__location"));
+            waitUntilElementIsReady(webDriver, By.id("search-departure-station"));
+            webDriver.findElement(By.id("search-departure-station")).click();
+            waitUntilElementIsReady(webDriver, By.className("locations-container__location"));
+            List<WebElement> toAirports = webDriver.findElements(By.className("locations-container__location"));
             for (WebElement toAirport : toAirports) {
                 String[] toAirportDetails = toAirport.getText().split("\\s");
                 String toCode = toAirportDetails[toAirportDetails.length - 1];
@@ -103,7 +103,7 @@ public class DirectionFinderService {
             }
             return directions;
         } catch (Exception e) {
-            LOGGER.info("Error during getting airport {} direction", airportName, e);
+            Log.info("Error during getting airport {} direction", airportName, e);
         }
         return Collections.emptyList();
     }

@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @Service
 @EnableScheduling
 public class DirectionRefreshService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DirectionRefreshService.class);
+    private static final Logger Log = LoggerFactory.getLogger(DirectionRefreshService.class);
 
     public final String databaseManagerUrl;
     private final DirectionFinderService directionFinderService;
@@ -28,14 +28,14 @@ public class DirectionRefreshService {
 
     @Scheduled(fixedDelay = 10000)
     public void updateDirectionIfNeeded() {
-        LOGGER.info("Checking if we want to update directions");
+        Log.info("Checking if we want to update directions");
         DirectionRefreshDetails latest = restTemplate
                 .getForObject(databaseManagerUrl + "/directionManager/lastUpdatedTimeWizzair", DirectionRefreshDetails.class);
 
         boolean b = latest != null && LocalDateTime.now().minusWeeks(1).isAfter(latest.getUpdatingTime());
 //        if (!latest.isPresent() || true) {
         if (b) {
-            LOGGER.info("Updating direction list");
+            Log.info("Updating direction list");
             directionFinderService.updateDirections();
             restTemplate.getForObject(databaseManagerUrl + "/directionManager/updateNewDirections/WIZZAIR", String.class);
         }

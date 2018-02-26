@@ -7,21 +7,21 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import pl.edu.uj.dusinski.services.DirectionUpdaterService;
 import pl.edu.uj.dusinski.dao.Airline;
 import pl.edu.uj.dusinski.dao.DirectionRefreshDetails;
 import pl.edu.uj.dusinski.jpa.DirectionRefreshDetailsRepository;
+import pl.edu.uj.dusinski.services.DirectionUpdaterService;
 
 import java.time.LocalDateTime;
 
 @Controller
 @RequestMapping("/directionManager")
 public class DirectionManagerController {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DirectionManagerController.class);
+    private static final Logger Log = LoggerFactory.getLogger(DirectionManagerController.class);
 
     private final DirectionRefreshDetailsRepository refreshDetailsRepository;
     private final DirectionUpdaterService directionUpdaterService;
-    private final DirectionRefreshDetails emptyDirectionRefreshDetails = new DirectionRefreshDetails(0, LocalDateTime.now().minusMonths(1), 0, Airline.UNKNOWN);
+    private final DirectionRefreshDetails emptyDirectionRefreshDetails = new DirectionRefreshDetails(LocalDateTime.now().minusMonths(1), 0, Airline.UNKNOWN);
 
     @Autowired
     public DirectionManagerController(DirectionRefreshDetailsRepository refreshDetailsRepository,
@@ -33,7 +33,7 @@ public class DirectionManagerController {
     @RequestMapping(value = "/lastUpdatedTimeWizzair", produces = "application/json")
     @ResponseBody
     public String directionLatUpdatedTime() {
-        LOGGER.info("Received last updated time request");
+        Log.info("Received last updated time request");
         DirectionRefreshDetails topById = refreshDetailsRepository.findTopByAirlineOrderByIdDesc(Airline.WIZZAIR);
         if (topById == null) {
             return emptyDirectionRefreshDetails.toString();
@@ -44,7 +44,7 @@ public class DirectionManagerController {
     @RequestMapping(value = "/updateNewDirections/{airline}")
     @ResponseBody
     public String saveNewDirections(@PathVariable("airline") Airline airline) {
-        LOGGER.info("Updating directions in database for {}", airline);
+        Log.info("Updating directions in database for {}", airline);
         directionUpdaterService.updateDirectionsInDatabase();
         return "ok";
     }

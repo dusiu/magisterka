@@ -13,17 +13,15 @@ import java.time.LocalDateTime;
 public class DirectionRefreshDetails {
 
     @Id
-    private final long id;
+    private String id;
     private final LocalDateTime updatingTime;
     private final int updatedDirectionsNumber;
     private final Airline airline;
 
     @JsonCreator
-    public DirectionRefreshDetails(@JsonProperty("id") long id,
-                                   @JsonProperty("updatingTime") LocalDateTime updatingTime,
+    public DirectionRefreshDetails(@JsonProperty("updatingTime") LocalDateTime updatingTime,
                                    @JsonProperty("updatedDirectionsNumber") int updatedDirectionsNumber,
                                    @JsonProperty("airline") Airline airline) {
-        this.id = id;
         this.updatingTime = updatingTime;
         this.updatedDirectionsNumber = updatedDirectionsNumber;
         this.airline = airline;
@@ -32,10 +30,6 @@ public class DirectionRefreshDetails {
 
     public Airline getAirline() {
         return airline;
-    }
-
-    public long getId() {
-        return id;
     }
 
     public LocalDateTime getUpdatingTime() {
@@ -60,7 +54,6 @@ public class DirectionRefreshDetails {
         DirectionRefreshDetails that = (DirectionRefreshDetails) o;
 
         return new EqualsBuilder()
-                .append(id, that.id)
                 .append(updatedDirectionsNumber, that.updatedDirectionsNumber)
                 .append(updatingTime, that.updatingTime)
                 .append(airline, that.airline)
@@ -70,7 +63,6 @@ public class DirectionRefreshDetails {
     @Override
     public int hashCode() {
         return new HashCodeBuilder(17, 37)
-                .append(id)
                 .append(updatingTime)
                 .append(updatedDirectionsNumber)
                 .append(airline)

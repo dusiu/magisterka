@@ -9,7 +9,7 @@ import pl.edu.uj.dusinski.jpa.AirportDetailsRepository;
 
 @Service
 public class AirportDetailsUpdaterService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AirportDetailsUpdaterService.class);
+    private static final Logger Log = LoggerFactory.getLogger(AirportDetailsUpdaterService.class);
 
     private final AirportDetailsRepository airportDetailsRepository;
 
@@ -20,9 +20,9 @@ public class AirportDetailsUpdaterService {
 
     public void updateAirportDetails(AirportDetails airportDetails) {
         if (airportDetailsRepository.findById(airportDetails.getId()).isPresent()) {
-            LOGGER.info("Airport details already exist in database", airportDetails.getId());
+            Log.info("Airport details already exist in database", airportDetails.getId());
         }else{
-            LOGGER.info("Adding new airport details with id:{}", airportDetails.getId());
+            Log.info("Adding new airport details with id:{}", airportDetails.getId());
             airportDetailsRepository.save(airportDetails);
         }
     }

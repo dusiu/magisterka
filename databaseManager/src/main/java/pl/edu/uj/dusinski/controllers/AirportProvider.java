@@ -10,12 +10,11 @@ import pl.edu.uj.dusinski.dao.AirportDetails;
 import pl.edu.uj.dusinski.jpa.AirportDetailsRepository;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/airport")
 public class AirportProvider {
-    private static final Logger LOGGER = LoggerFactory.getLogger(AirportProvider.class);
+    private static final Logger Log = LoggerFactory.getLogger(AirportProvider.class);
 
     private final AirportDetailsRepository airportDetailsRepository;
     private final Gson gson = new Gson();
@@ -30,7 +29,7 @@ public class AirportProvider {
     @ResponseBody
     public String findAllReports() {
         List<AirportDetails> allAirports = airportDetailsRepository.findAll();
-        LOGGER.info("Returning {} airports details", allAirports.size());
+        Log.info("Returning {} airports details", allAirports.size());
         return gson.toJson(allAirports);
     }
 

@@ -9,10 +9,10 @@ import java.util.Map;
 
 public enum Airline {
 
-    @JsonProperty("wizzair")
-    WIZZAIR("wizzair"),
-    @JsonProperty("unknown")
-    UNKNOWN("unknown");
+    @JsonProperty("WIZZAIR")
+    WIZZAIR("WIZZAIR"),
+    @JsonProperty("UNKNOWN")
+    UNKNOWN("UNKNOWN");
 
     private final String value;
 

@@ -11,12 +11,13 @@ import pl.edu.uj.dusinski.dao.Airline;
 import pl.edu.uj.dusinski.dao.Direction;
 import pl.edu.uj.dusinski.jpa.DirectionRepository;
 
+import java.util.Collections;
 import java.util.List;
 
 @Controller
 @RequestMapping("/directions")
 public class DirectionsProvider {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DirectionsProvider.class);
+    private static final Logger Log = LoggerFactory.getLogger(DirectionsProvider.class);
 
     private final DirectionRepository directionRepository;
     private final Gson gson = new Gson();
@@ -29,7 +30,10 @@ public class DirectionsProvider {
     @ResponseBody
     public String getAllDirectionFor(@PathVariable("airline") Airline airline) {
         List<Direction> directions = directionRepository.findAllByAirline(airline);
-        LOGGER.info("Returning {} directions", directions.size());
+        if (directions.isEmpty()) {
+            return gson.toJson(Collections.emptyList());
+        }
+        Log.info("Returning {} directions", directions.size());
         return gson.toJson(directions);
     }
 

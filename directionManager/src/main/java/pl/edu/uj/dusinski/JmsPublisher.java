@@ -12,18 +12,22 @@ import pl.edu.uj.dusinski.dao.Direction;
 @Component
 @EnableScheduling
 public class JmsPublisher {
-    private static final Logger LOGGER = LoggerFactory.getLogger(JmsPublisher.class);
+    private static final Logger Log = LoggerFactory.getLogger(JmsPublisher.class);
+
+    private final JmsTemplate jmsTemplate;
 
     @Autowired
-    JmsTemplate jmsTemplate;
+    public JmsPublisher(JmsTemplate jmsTemplate) {
+        this.jmsTemplate = jmsTemplate;
+    }
 
     public void pusblishAirportDetails(AirportDetails airportDetails) {
-        LOGGER.info("Publishing new airport details {}", airportDetails.getId());
+        Log.info("Publishing new airport details {}", airportDetails.getId());
         jmsTemplate.convertAndSend("airportDetailsQueue", airportDetails);
     }
 
     public void publishDirection(Direction direction) {
-        LOGGER.info("Publishing new direction {}", direction.getId());
+        Log.info("Publishing new direction {}", direction.getId());
         jmsTemplate.convertAndSend("directionQueue", direction);
 
     }

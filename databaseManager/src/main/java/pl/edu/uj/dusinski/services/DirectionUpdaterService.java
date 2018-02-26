@@ -17,7 +17,7 @@ import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
 
 @Service
 public class DirectionUpdaterService {
-    private static final Logger LOGGER = LoggerFactory.getLogger(DirectionUpdaterService.class);
+    private static final Logger Log = LoggerFactory.getLogger(DirectionUpdaterService.class);
 
     private final Set<Direction> directions = new HashSet<>();
     private final DirectionRepository directionRepository;
@@ -31,20 +31,20 @@ public class DirectionUpdaterService {
 
     public void updateDirectionsInDatabase() {
         if (directions.isEmpty()) {
-            LOGGER.info("There are no directions to update");
+            Log.info("There are no directions to update");
             return;
         }
         directionRepository.saveAll(directions);
-        LOGGER.info("There are {} new direction in database", directions.size());
+        Log.info("There are {} new direction in database", directions.size());
         directions.clear();
-        refreshDetailsRepository.save(new DirectionRefreshDetails(refreshDetailsRepository.count(), LocalDateTime.now(), directions.size(), WIZZAIR));
+        refreshDetailsRepository.save(new DirectionRefreshDetails(LocalDateTime.now(), directions.size(), WIZZAIR));
     }
 
     public void saveNewDirections(Direction direction) {
         if (directionRepository.findById(direction.getId()).isPresent()) {
-            LOGGER.info("Direction {} already exist in database", direction.getId());
+            Log.info("Direction {} already exist in database", direction.getId());
         } else {
-            LOGGER.info("Adding new direction {} to database", direction.getId());
+            Log.info("Adding new direction {} to database", direction.getId());
             directions.add(direction);
         }
     }

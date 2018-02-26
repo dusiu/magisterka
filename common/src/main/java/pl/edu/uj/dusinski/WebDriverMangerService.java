@@ -1,5 +1,6 @@
 package pl.edu.uj.dusinski;
 
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.phantomjs.PhantomJSDriverService;
@@ -8,20 +9,21 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.PreDestroy;
+import java.util.ArrayList;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class WebDriverMangerService {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(WebDriverMangerService.class);
+    private static final Logger Log = LoggerFactory.getLogger(WebDriverMangerService.class);
     private int MAXIMUM_CAPACITY = 8;
     private BlockingQueue<WebDriver> webDrivers = new ArrayBlockingQueue<>(MAXIMUM_CAPACITY);
     private final String phantomPath = System.getProperty("user.dir") + "\\common\\src\\main\\resources\\phantomjs.exe";
     private final String chromePath = System.getProperty("user.dir") + "\\common\\src\\main\\resources\\chromedriver.exe";
 
-    public WebDriverMangerService(int phantomJsNumber) {
-        if (phantomJsNumber > 0) {
-            this.webDrivers = new ArrayBlockingQueue<>(phantomJsNumber);
+    public WebDriverMangerService(int webDriverNumber) {
+        if (webDriverNumber > 0) {
+            this.webDrivers = new ArrayBlockingQueue<>(webDriverNumber);
         }
         System.setProperty("phantomjs.binary.path", phantomPath);
         System.setProperty("webdriver.chrome.driver", chromePath);
@@ -31,29 +33,38 @@ public class WebDriverMangerService {
                 "--webdriver-loglevel=NONE"
         };
         dcap.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, phantomArgs);
-        for (int i = 0; i < phantomJsNumber; i++) {
+        for (int i = 0; i < webDriverNumber; i++) {
 //            webDrivers.add(new FirefoxDriver());
 //            webDrivers.add(new PhantomJSDriver(dcap));
-            webDrivers.add(new ChromeDriver());
+            ChromeDriver driver = new ChromeDriver();
+//            WebDriver driver = new PhantomJSDriver(dcap);
+//            driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
+            webDrivers.add(driver);
         }
     }
 
-    public WebDriver getFreePhantomJs() {
+    public WebDriver getFreeWebDriver() {
         return getWebDriver();
     }
 
     private WebDriver getWebDriver() {
-        WebDriver take = null;
+        WebDriver driver = null;
         try {
-            take = webDrivers.take();
+            driver = webDrivers.take();
+            ((JavascriptExecutor)driver).executeScript("window.open()");
+            ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
+            driver.switchTo().window(tabs.get(1));
         } catch (InterruptedException e) {
-            LOGGER.error("Error during waiting for phantomJs instance", e);
+            Log.error("Error during waiting for webDriver instance", e);
         }
-        return take;
+        return driver;
     }
 
-    public void returnPhantomJs(WebDriver webDriver) {
-        webDrivers.add(webDriver);
+    public void returnWebDriver(WebDriver driver) {
+        driver.close();
+        ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
+        driver.switchTo().window(tabs.get(0));
+        webDrivers.add(driver);
     }
 
     @PreDestroy
