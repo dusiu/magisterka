@@ -44,9 +44,13 @@ public class DirectionsProviderService {
     @PostConstruct
     public void updateDirections() {
         Log.info("Updating directions list for Wizzair");
-        List<Direction> wizzairDirections = Arrays.asList(restTemplate.getForObject(getUrlForAirline(Airline.WIZZAIR), Direction[].class));
-        airlineDirections.put(Airline.WIZZAIR, wizzairDirections);
-        Log.info("There are {} different direztions for Wizzair", wizzairDirections.size());
+        try {
+            List<Direction> wizzairDirections = Arrays.asList(restTemplate.getForObject(getUrlForAirline(Airline.WIZZAIR), Direction[].class));
+            airlineDirections.put(Airline.WIZZAIR, wizzairDirections);
+            Log.info("There are {} different direztions for Wizzair", wizzairDirections.size());
+        } catch (Exception e) {
+            Log.error("Cannot get wizziar directions, turn on database manager!");
+        }
     }
 
     private String getUrlForAirline(Airline airline) {

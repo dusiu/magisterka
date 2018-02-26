@@ -30,44 +30,6 @@ public class FlightsDetailsFinderService {
     private final ExecutorService executorService;
     private final JmsPublisher jmsPublisher;
     private final int daysToCheck;
-    private final String[] fromCode = new String[]{
-//            "dwc",
-//            "sjj",
-            "boj",
-            "bsl",
-            "prg",
-            "vie",
-            "ltn",
-            "kut",
-            "osi",
-            "bud",
-            "tln",
-            "kiv",
-            "skp",
-            "ktw",
-            "otp",
-            "beg",
-            "lwq"
-    };
-    private final String[] toCode = new String[]{
-//            "sof",
-//            "bud",
-            "bud",
-            "osi",
-            "ltn",
-            "tzl",
-            "boj",
-            "ltn",
-            "bsl",
-            "gyd",
-            "vie",
-            "ath",
-            "crl",
-            "ltn",
-            "crl",
-            "dtm",
-            "ltn"
-    };
 
     @Autowired
     public FlightsDetailsFinderService(DirectionsProviderService directionsProviderService,
@@ -88,13 +50,9 @@ public class FlightsDetailsFinderService {
     }
 
     private void findAllWizzairFlights() {
-//        List<Direction> wizzairDirections = directionsProviderService.getDirectionsFor(Airline.WIZZAIR);
-//        Log.info("Checking {} directions", wizzairDirections.size());
+        List<Direction> wizzairDirections = directionsProviderService.getDirectionsFor(Airline.WIZZAIR);
+        Log.info("Checking {} directions", wizzairDirections.size());
         List<Callable<Void>> tasks = new ArrayList<>();
-        List<Direction> wizzairDirections = new ArrayList<>();
-        for (int i = 0; i < fromCode.length; i++) {
-            wizzairDirections.add(new Direction(fromCode[i] + toCode[i], fromCode[i].toUpperCase(), toCode[i].toUpperCase(), Airline.WIZZAIR));
-        }
         for (Direction wizzairDirection : wizzairDirections) {
             tasks.add(new FindFlightsTask(webDriverMangerService, prepareUrl(wizzairDirection), jmsPublisher, wizzairDirection, daysToCheck));
         }
