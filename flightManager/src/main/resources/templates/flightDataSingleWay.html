@@ -1,0 +1,57 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Flight Data</title>
+    <script th:src="@{/jquery.min.js}"></script>
+    <script th:src="@{/bootstrap.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/bootstrap.min.css}"/>
+</head>
+<body>
+
+<div class="jumbotron">
+    <div class="container text-center">
+        <h1>Flight Manager</h1>
+        <p>Wherever you want</p>
+    </div>
+</div>
+
+<div class="container">
+    <h2>List of flights one way:</h2>
+    <div class="row">
+        <div class="col-sm-12">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Airline</th>
+                    <th>Date</th>
+                    <th>Original price</th>
+                    <th>Converted Price</th>
+                    <th>Link</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="flight : ${flightData}">
+                    <td th:text="${flight.fromAirport.name}"></td>
+                    <td th:text="${flight.toAirport.name}"></td>
+                    <td th:text="${flight.direction.airline}"></td>
+                    <td th:text="${flight.flyDate}"></td>
+                    <td th:text="${flight.originalPrice+' '+flight.currency}"></td>
+                    <td th:text="${flight.originalPrice+' '+flight.currency}"></td>
+                    <td><a th:href="@{flight.flightUrl}">Click</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+
+<!--<footer th:replace="fragments/footer :: 'footer'">-->
+<!--footer-->
+<!--</footer>-->
+
+
+</body>
+</html>

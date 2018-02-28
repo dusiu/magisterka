@@ -1,0 +1,57 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Flight Details</title>
+    <script th:src="@{/jquery.min.js}"></script>
+    <script th:src="@{/bootstrap.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/bootstrap.min.css}"/>
+</head>
+<body>
+
+<div class="jumbotron">
+    <div class="container text-center">
+        <h1>Flight Manager</h1>
+        <p>Wherever you want</p>
+    </div>
+</div>
+
+
+<div class="container">
+    <div th:if="${error!=null}">
+        <center><h2 th:text="${error}"></h2></center>
+    </div>
+    <div th:if="${error==null}">
+        <form th:action="@{/flyTo}" th:object="${request}" method="post">
+            <div class="col-sm-3">
+                <label for="fromCode">From: </label>
+                <input type="text" id="fromCode" name="fromCode" th:value="${currentAirport.code}"
+                       th:placeholder="${currentAirport.name}" readonly/>
+            </div>
+            <div class="col-sm-2">
+                <label for="toCode">To airport:</label>
+                <select name="toCode" id="toCode">
+                    <div th:each="direction : ${directions}">
+                        <option th:field="*{toCode}" th:value="${direction.code}" th:text="${direction.name}"></option>
+                    </div>
+                </select>
+            </div>
+            <div class="col-sm-4">
+                <label for="daysToStay">How many days you want to stay (1-30): </label>
+                <input type="number" class="form-control" th:field="*{daysToStay}" name="daysToStay" id="daysToStay"
+                       min="1" max="30">
+            </div>
+            <div class="col-sm-3">
+                <button type="submit" class="btn btn-default">Submit</button>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+
+<!--<footer th:replace="fragments/footer :: 'footer'">-->
+<!--footer-->
+<!--</footer>-->
+
+
+</body>
+</html>
