@@ -14,7 +14,7 @@ import pl.edu.uj.dusinski.dao.FlightDetailsRequest;
 import pl.edu.uj.dusinski.services.FlightDataChooserService;
 import pl.edu.uj.dusinski.services.FlightDataProviderService;
 
-import java.util.Set;
+import java.util.List;
 
 @Controller
 public class FlightsController {
@@ -39,12 +39,12 @@ public class FlightsController {
     @RequestMapping("/flyFrom/{id}")
     public String getFlyToDirections(@PathVariable("id") String id, Model model) {
         String code = id.substring(0, 3);
-        Set<AirportDetails> flightsForDirection = flightDataProviderService.getAirportsForDirection(code);
+        List<AirportDetails> flightsForDirection = flightDataProviderService.getAirportsForDirection(code);
         AirportDetails currentAirport = flightDataProviderService.getAirportDetails(id);
         if (flightsForDirection.isEmpty() || currentAirport == null) {
             model.addAttribute("error", "Error during getting directions, probably database manager is not running");
         } else {
-            flightsForDirection.add(takeMeAnyway);
+            flightsForDirection.add(0, takeMeAnyway);
             model.addAttribute("directions", flightsForDirection);
             model.addAttribute("currentAirport", currentAirport);
             model.addAttribute("request", new FlightDetailsRequest());
@@ -55,6 +55,9 @@ public class FlightsController {
     @RequestMapping(value = "/flyTo", method = RequestMethod.POST, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public String getFlyToDetails(@ModelAttribute("request") FlightDetailsRequest flightDetailsRequest, Model model) {
         model.addAttribute("flightData", flightDataChooserService.getBestDealsForRequest(flightDetailsRequest));
+        if (flightDetailsRequest.isBothWay()) {
+            return "flightDataBothWay";
+        }
         return "flightDataSingleWay";
     }
 

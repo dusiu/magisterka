@@ -38,6 +38,7 @@ public class CurrencyRatioProviderService implements Function<String, Double> {
 
     @Override
     public Double apply(String currency) {
+//        todo find all needed currencies
         return currencyRatio.getOrDefault(currency, 1.0);
     }
 

@@ -17,12 +17,29 @@
 <div class="container">
     <h2>Choose where from you want to fly:</h2>
     <div class="row">
-        <div class="col-sm-10" th:each="airport : ${flyFromAirports}">
-            <a th:href="'/flyFrom/'+${airport.id}" th:text="${airport.fullName+'('+airport.code+')'}">
-            </a>
-        </div>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Full Name</th>
+                <th>Code</th>
+                <th>Airline</th>
+                <th>Link</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="airport:${flyFromAirports}">
+                <td th:text="${airport.name}"></td>
+                <td th:text="${airport.fullName}"></td>
+                <td th:text="${airport.code}"></td>
+                <td th:text="${airport.airline}"></td>
+                <td>
+                    <a th:href="'/flyFrom/'+${airport.id}">Click</a>
+                </td>
+            </tr>
+            </tbody>
+        </table>
     </div>
-
 </div>
 
 <!--<footer th:replace="fragments/footer :: 'footer'">-->

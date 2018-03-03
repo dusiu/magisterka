@@ -17,7 +17,10 @@
 <div class="container">
     <h2>List of flights one way:</h2>
     <div class="row">
-        <div class="col-sm-12">
+        <div th:if="${flightData.isEmpty()}">
+            <center><h2>No data</h2></center>
+        </div>
+        <div class="col-sm-12" th:if="${!flightData.isEmpty()}">
             <table class="table">
                 <thead>
                 <tr>
@@ -31,22 +34,22 @@
                 </tr>
                 </thead>
                 <tbody>
-                <tr th:each="flight : ${flightData}">
+                <tr th:each="flight:${flightData}">
                     <td th:text="${flight.fromAirport.name}"></td>
                     <td th:text="${flight.toAirport.name}"></td>
                     <td th:text="${flight.direction.airline}"></td>
                     <td th:text="${flight.flyDate}"></td>
                     <td th:text="${flight.originalPrice+' '+flight.currency}"></td>
-                    <td th:text="${#numbers.formatDecimal(flight.plnPrice, 0, 2)+' PLN'}"></td>
+                    <td th:text="${#numbers.formatDecimal(flight.plnPrice,0,2)+' PLN'}"></td>
                     <td><a th:href="@{${flight.flightUrl}}">Click</a>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
+        <a th:href="@{/}">Go Back</a>
+        <br/>
     </div>
-    <a th:href="@{/}">Go Back</a>
-
 </div>
 
 <!--<footer th:replace="fragments/footer :: 'footer'">-->

@@ -1,0 +1,86 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Flight Data</title>
+    <script th:src="@{/jquery.min.js}"></script>
+    <script th:src="@{/bootstrap.min.js}"></script>
+    <link rel="stylesheet" th:href="@{/bootstrap.min.css}"/>
+</head>
+<body>
+
+<div class="jumbotron">
+    <div class="container text-center">
+        <h1>Flight Manager</h1>
+        <p>Wherever you want</p>
+    </div>
+</div>
+
+<div class="container">
+    <h2>List of flights both ways:</h2>
+    <div class="row">
+        <div th:if="${flightData.isEmpty()}">
+            <center><h2>No data</h2></center>
+        </div>
+        <div class="col-sm-12" th:if="${!flightData.isEmpty()}">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Airline</th>
+                    <th>Date</th>
+                    <th>Original price</th>
+                    <th>Converted Price</th>
+                    <th>Total converted price</th>
+                    <th>Link</th>
+                </tr>
+                </thead>
+                <tbody>
+                <div th:each="flight:${flightData}">
+                    <tr>
+                        <td th:text="${flight.from.fromAirport.name}"></td>
+                        <td th:text="${flight.from.toAirport.name}"></td>
+                        <td th:text="${flight.from.direction.airline}"></td>
+                        <td th:text="${flight.from.flyDate}"></td>
+                        <td th:text="${flight.from.originalPrice+' '+flight.from.currency}"></td>
+                        <td th:text="${#numbers.formatDecimal(flight.from.plnPrice,0,2)+' PLN'}"></td>
+                        <td></td>
+                        <td><a th:href="@{${flight.from.flightUrl}}">Click</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td th:text="${flight.to.fromAirport.name}"></td>
+                        <td th:text="${flight.to.toAirport.name}"></td>
+                        <td th:text="${flight.to.direction.airline}"></td>
+                        <td th:text="${flight.to.flyDate}"></td>
+                        <td th:text="${flight.to.originalPrice+' '+flight.to.currency}"></td>
+                        <td th:text="${#numbers.formatDecimal(flight.to.plnPrice,0,2)+' PLN'}"></td>
+                        <td th:text="${#numbers.formatDecimal(flight.totalPlnPrice,0,2)+' PLN'}"></td>
+                        <td><a th:href="@{${flight.to.flightUrl}}">Click</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                </div>
+                </tbody>
+            </table>
+        </div>
+        <a th:href="@{/}">Go Back</a>
+        <br/>
+    </div>
+</div>
+
+<!--<footer th:replace="fragments/footer :: 'footer'">-->
+<!--footer-->
+<!--</footer>-->
+
+
+</body>
+</html>

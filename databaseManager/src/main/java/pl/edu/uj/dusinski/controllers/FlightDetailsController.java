@@ -4,15 +4,16 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import pl.edu.uj.dusinski.dao.AirportDetails;
-import pl.edu.uj.dusinski.dao.FlightDetails;
+import org.springframework.web.bind.annotation.*;
+import pl.edu.uj.dusinski.dao.*;
 import pl.edu.uj.dusinski.jpa.AirportDetailsRepository;
+import pl.edu.uj.dusinski.jpa.DirectionRepository;
 import pl.edu.uj.dusinski.jpa.FlightDetailsRepository;
 
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
@@ -26,14 +27,17 @@ public class FlightDetailsController {
     private final Gson gson = new Gson();
     private final FlightDetailsRepository flightDetailsRepository;
     private final AirportDetailsRepository airportDetailsRepository;
+    private final DirectionRepository directionRepository;
     private final String anyway = "ANYWAY";
     private final BiPredicate<FlightDetails, String> goToCodeOrAnyway = (v, toCode) -> v.getDirection().getToCode().equals(toCode) || anyway.equals(toCode);
 
     @Autowired
     public FlightDetailsController(FlightDetailsRepository flightDetailsRepository,
-                                   AirportDetailsRepository airportDetailsRepository) {
+                                   AirportDetailsRepository airportDetailsRepository,
+                                   DirectionRepository directionRepository) {
         this.flightDetailsRepository = flightDetailsRepository;
         this.airportDetailsRepository = airportDetailsRepository;
+        this.directionRepository = directionRepository;
     }
 
     @RequestMapping("/flyFrom")
@@ -73,15 +77,49 @@ public class FlightDetailsController {
         return gson.toJson(airports.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList()));
     }
 
-    @RequestMapping("/flightDetails/{from}/{to}")
+    @RequestMapping(value = "/flightDetails", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)
     @ResponseBody
-    public String getAirportDetails(@PathVariable("from") String from, @PathVariable("to") String to) {
-        List<FlightDetails> flightDetails = flightDetailsRepository.findAll()
-                .stream()
-                .filter(v -> v.getDirection().getFromCode().equals(from))
-                .filter(v -> goToCodeOrAnyway.test(v, to))
+    public String getAirportDetails(@RequestBody FlightDetailsRequest request) {
+
+        List<Direction> directions;
+        if (anyway.equals(request.getToCode())) {
+            directions = directionRepository.findByFromCode(request.getFromCode());
+        } else {
+            directions = Collections.singletonList(directionRepository
+                    .findByFromCodeAndToCode(request.getFromCode(), request.getToCode()));
+        }
+
+        List<FlightDetails> flightDetails = flightDetailsRepository.findByDirectionIn(directions);
+        if (!request.isBothWay()) {
+            return gson.toJson(flightDetails);
+        }
+
+        List<FlightDetailsBothWay> bothWayFlightsMap = flightDetails.stream()
+                .map(v -> new FlightDetailsBothWay(v,
+                        flightDetailsRepository.findByDirectionAndFlyDateBetween(
+                                findOppositeDirection(v), prepareStartDate(v, request), prepareEndDate(v, request))
+                ))
+                .filter(v -> v.getTo().size() > 0)
                 .collect(Collectors.toList());
-        Log.info("Returning flight details from {} to {}", from, to);
-        return gson.toJson(flightDetails);
+
+        Log.info("Returning flight details from {} to {}", request.getFromCode(), request.getToCode());
+        return gson.toJson(bothWayFlightsMap);
     }
+
+    private LocalDate prepareEndDate(FlightDetails v, FlightDetailsRequest request) {
+        return v.getFlyDate().plusDays(request.getDaysToStay());
+    }
+
+    private LocalDate prepareStartDate(FlightDetails v, FlightDetailsRequest request) {
+        return v.getFlyDate().minusDays(request.getDaysToStay()).isBefore(LocalDate.now().plusDays(1)) ?
+                LocalDate.now().plusDays(1) : v.getFlyDate().minusDays(request.getDaysToStay());
+    }
+
+    private Direction findOppositeDirection(FlightDetails flightDetails) {
+        Direction byFromCodeAndToCode = directionRepository.findByFromCodeAndToCode(flightDetails.getDirection().getToCode(),
+                flightDetails.getDirection().getFromCode());
+        return byFromCodeAndToCode;
+    }
+
+
 }

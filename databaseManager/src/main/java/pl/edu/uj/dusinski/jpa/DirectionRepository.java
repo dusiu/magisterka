@@ -9,4 +9,9 @@ import java.util.List;
 public interface DirectionRepository extends MongoRepository<Direction, String> {
 
     List<Direction> findAllByAirline(Airline airline);
+
+    List<Direction> findByFromCode(String fromCode);
+
+    Direction findByFromCodeAndToCode(String fromCode, String toCode);
+
 }

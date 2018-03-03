@@ -6,12 +6,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import pl.edu.uj.dusinski.dao.AirportDetails;
 import pl.edu.uj.dusinski.dao.FlightDetails;
+import pl.edu.uj.dusinski.dao.FlightDetailsBothWay;
 import pl.edu.uj.dusinski.dao.FlightDetailsRequest;
 
 import java.lang.reflect.Type;
@@ -31,7 +35,7 @@ public class FlightDataProviderService {
     private final String flyFromUrl = "/flights/flyFrom";
     private final String flyGetDirectionsUrl = "/flights/getDirections/";
     private final String airportsUrl = "/flights/getAllAirports";
-    private final String flightsDetailsUrl = "/flights/flightDetails/";
+    private final String flightsDetailsUrl = "/flights/flightDetails";
     private final Gson gson = new Gson();
     private final Type flightDetailsType = new TypeToken<Set<FlightDetails>>() {
     }.getType();
@@ -65,16 +69,16 @@ public class FlightDataProviderService {
         }
     }
 
-    public Set<AirportDetails> getAirportsForDirection(String direction) {
+    public List<AirportDetails> getAirportsForDirection(String direction) {
         try {
             AirportDetails[] flyToDirection = gson.fromJson(restTemplate.getForObject(databaseManagerUrl + flyGetDirectionsUrl + direction, String.class), AirportDetails[].class);
             if (flyToDirection != null && flyToDirection.length > 0) {
-                return new HashSet<>(Arrays.asList(flyToDirection));
+                return new ArrayList<>(Arrays.asList(flyToDirection));
             }
-            return Collections.emptySet();
+            return Collections.emptyList();
         } catch (Exception e) {
             Log.error("Error during getting fly to direction list, probably database manager is not running", e);
-            return Collections.emptySet();
+            return Collections.emptyList();
         }
     }
 
@@ -86,15 +90,32 @@ public class FlightDataProviderService {
         return directionFromWhereFlyTo;
     }
 
-    public Set<FlightDetails> getFlightDetailsForRequest(FlightDetailsRequest flightDetailsRequest) {
+    public Set<FlightDetails> getOneWayFlightDetails(FlightDetailsRequest flightDetailsRequest) {
         try {
-            return gson.fromJson(restTemplate
-                            .getForObject(databaseManagerUrl + flightsDetailsUrl + flightDetailsRequest.getFromCode() + "/" + flightDetailsRequest.getToCode(), String.class),
-                    flightDetailsType);
+            String json = getFlightDetailsFromRequestAsJson(flightDetailsRequest);
+            return gson.fromJson(json, flightDetailsType);
         } catch (Exception e) {
             Log.error("Error during getting airport details, probably database manager is not running", e);
         }
         return Collections.emptySet();
+    }
+
+    public List<FlightDetailsBothWay> getBothWaysFlightDetails(FlightDetailsRequest flightDetailsRequest) {
+        try {
+            String json = getFlightDetailsFromRequestAsJson(flightDetailsRequest);
+            return gson.fromJson(json, new TypeToken<List<FlightDetailsBothWay>>() {
+            }.getType());
+        } catch (Exception e) {
+            Log.error("Error during getting airport details, probably database manager is not running", e);
+        }
+        return Collections.emptyList();
+    }
+
+    private String getFlightDetailsFromRequestAsJson(FlightDetailsRequest flightDetailsRequest) {
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_JSON);
+        HttpEntity<String> entity = new HttpEntity<>(flightDetailsRequest.toString(), headers);
+        return restTemplate.postForEntity(databaseManagerUrl + flightsDetailsUrl, entity, String.class).getBody();
     }
 
 }
