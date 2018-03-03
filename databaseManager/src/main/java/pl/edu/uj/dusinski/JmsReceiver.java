@@ -31,19 +31,19 @@ public class JmsReceiver {
 
     @JmsListener(destination = "directionQueue", containerFactory = "jmsListenerFactory")
     public void receiveDirectionMessage(Direction direction) {
-        Log.info("Received new direction {}", direction);
+        Log.debug("Received new direction {}", direction);
         directionUpdaterService.saveNewDirections(direction);
     }
 
     @JmsListener(destination = "airportDetailsQueue", containerFactory = "jmsListenerFactory")
     public void receiveAirportDetailsMessage(AirportDetails airportDetails) {
-        Log.info("Received new airport details {}", airportDetails);
+        Log.debug("Received new airport details {}", airportDetails);
         airportDetailsUpdaterService.updateAirportDetails(airportDetails);
     }
 
     @JmsListener(destination = "flightDetailsQueue", containerFactory = "jmsListenerFactory")
     public void receiveFlightDetailsMessage(FlightDetails flightDetails) {
-        Log.info("Received new flight details {}", flightDetails);
+        Log.debug("Received new flight details {}", flightDetails);
         flightDetailsUpdaterService.updateFlightDetails(flightDetails);
     }
 

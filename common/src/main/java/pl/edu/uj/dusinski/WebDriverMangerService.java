@@ -1,10 +1,10 @@
 package pl.edu.uj.dusinski;
 
+import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.phantomjs.PhantomJSDriverService;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,18 +27,11 @@ public class WebDriverMangerService {
         }
         System.setProperty("phantomjs.binary.path", phantomPath);
         System.setProperty("webdriver.chrome.driver", chromePath);
-        System.setProperty("webdriver.gecko.driver", "C:\\tools\\phantomJs\\bin\\geckodriver.exe");
-        DesiredCapabilities dcap = new DesiredCapabilities();
-        String[] phantomArgs = new String[]{
-                "--webdriver-loglevel=NONE"
-        };
-        dcap.setCapability(PhantomJSDriverService.PHANTOMJS_CLI_ARGS, phantomArgs);
+        ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.setHeadless(true);
+        chromeOptions.addArguments("user-agent=user_agent");
         for (int i = 0; i < webDriverNumber; i++) {
-//            webDrivers.add(new FirefoxDriver());
-//            webDrivers.add(new PhantomJSDriver(dcap));
-            ChromeDriver driver = new ChromeDriver();
-//            WebDriver driver = new PhantomJSDriver(dcap);
-//            driver.manage().timeouts().implicitlyWait(20, TimeUnit.SECONDS);
+            ChromeDriver driver = new ChromeDriver(chromeOptions);
             webDrivers.add(driver);
         }
     }
@@ -51,9 +44,10 @@ public class WebDriverMangerService {
         WebDriver driver = null;
         try {
             driver = webDrivers.take();
-            ((JavascriptExecutor)driver).executeScript("window.open()");
+            ((JavascriptExecutor) driver).executeScript("window.open()");
             ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
             driver.switchTo().window(tabs.get(1));
+            driver.manage().window().setSize(new Dimension(800, 600));
         } catch (InterruptedException e) {
             Log.error("Error during waiting for webDriver instance", e);
         }

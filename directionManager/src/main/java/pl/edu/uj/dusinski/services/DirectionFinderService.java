@@ -86,7 +86,7 @@ public class DirectionFinderService {
             webDriver.get(airportUrl);
             waitUntilElementIsReady(webDriver, By.className("gr-7"));
             String fullNameWithCode = webDriver.findElement(By.className("gr-7")).getText().split("\\n")[0];
-            String airportFullName = fullNameWithCode.substring(0, fullNameWithCode.lastIndexOf(OPEN_BRACKET));
+            String airportFullName = fullNameWithCode.substring(0, fullNameWithCode.lastIndexOf(OPEN_BRACKET)).trim();
             String fromCode = fullNameWithCode
                     .substring(fullNameWithCode.lastIndexOf(OPEN_BRACKET) + 1, fullNameWithCode.lastIndexOf(CLOSE_BRACKET));
             jmsPublisher.pusblishAirportDetails(new AirportDetails(airportName, airportFullName, "", fromCode, WIZZAIR));

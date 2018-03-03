@@ -8,7 +8,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import pl.edu.uj.dusinski.WebDriverMangerService;
 import pl.edu.uj.dusinski.dao.Airline;
 import pl.edu.uj.dusinski.dao.Direction;
 
@@ -18,7 +17,7 @@ import java.util.*;
 @Service
 @EnableScheduling
 public class DirectionsProviderService {
-    private static final Logger Log = LoggerFactory.getLogger(WebDriverMangerService.class);
+    private static final Logger Log = LoggerFactory.getLogger(DirectionsProviderService.class);
 
     private final RestTemplate restTemplate;
     private final String databaseManagerUrl;
@@ -47,7 +46,7 @@ public class DirectionsProviderService {
         try {
             List<Direction> wizzairDirections = Arrays.asList(restTemplate.getForObject(getUrlForAirline(Airline.WIZZAIR), Direction[].class));
             airlineDirections.put(Airline.WIZZAIR, wizzairDirections);
-            Log.info("There are {} different direztions for Wizzair", wizzairDirections.size());
+            Log.info("There are {} different directions for Wizzair", wizzairDirections.size());
         } catch (Exception e) {
             Log.error("Cannot get wizziar directions, turn on database manager!");
         }

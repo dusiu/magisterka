@@ -17,7 +17,7 @@ public class JmsPublisher {
     }
 
     public void publishNewFlightDetails(FlightDetails flightDetails) {
-        Log.info("Publishing new flight details, {}", flightDetails.getId());
+        Log.debug("Publishing new flight details, {}", flightDetails.getId());
         jmsTemplate.convertAndSend("flightDetailsQueue", flightDetails);
     }
 }

@@ -36,8 +36,8 @@ public class DirectionUpdaterService {
         }
         directionRepository.saveAll(directions);
         Log.info("There are {} new direction in database", directions.size());
-        directions.clear();
         refreshDetailsRepository.save(new DirectionRefreshDetails(LocalDateTime.now(), directions.size(), WIZZAIR));
+        directions.clear();
     }
 
     public void saveNewDirections(Direction direction) {

@@ -18,11 +18,12 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 @EnableScheduling
 public class FlightsDetailsFinderService {
-    private static final Logger Log = LoggerFactory.getLogger(WebDriverMangerService.class);
+    private static final Logger Log = LoggerFactory.getLogger(FlightsDetailsFinderService.class);
     private static final String WIZZAIR_FLIGHTS_URL = "https://wizzair.com/en-gb#/booking/select-flight/%s/%s/%s";
 
     private final DirectionsProviderService directionsProviderService;
@@ -30,6 +31,8 @@ public class FlightsDetailsFinderService {
     private final ExecutorService executorService;
     private final JmsPublisher jmsPublisher;
     private final int daysToCheck;
+    private static int submittedTask;
+    private static AtomicInteger doneTask = new AtomicInteger(0);
 
     @Autowired
     public FlightsDetailsFinderService(DirectionsProviderService directionsProviderService,
@@ -51,19 +54,23 @@ public class FlightsDetailsFinderService {
 
     private void findAllWizzairFlights() {
         List<Direction> wizzairDirections = directionsProviderService.getDirectionsFor(Airline.WIZZAIR);
-        Log.info("Checking {} directions", wizzairDirections.size());
+        Log.info("Checking {} wizziar directions", wizzairDirections.size());
         List<Callable<Void>> tasks = new ArrayList<>();
         for (Direction wizzairDirection : wizzairDirections) {
-            tasks.add(new FindFlightsTask(webDriverMangerService, prepareUrl(wizzairDirection), jmsPublisher, wizzairDirection, daysToCheck));
+            tasks.add(new FindFlightsTaskWizzair(webDriverMangerService, prepareUrl(wizzairDirection), jmsPublisher, wizzairDirection, daysToCheck));
         }
+        submittedTask = tasks.size();
+        doneTask.set(0);
 //        add other
         try {
             executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
             Log.error("Error during executing tasks", e);
         }
+    }
 
-
+    static void logTaskFinished() {
+        Log.info("There are: {}/{} finished task", doneTask.incrementAndGet(), submittedTask);
     }
 
     private String prepareUrl(Direction wizziarDirection) {
