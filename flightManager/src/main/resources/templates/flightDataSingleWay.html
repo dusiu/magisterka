@@ -37,14 +37,15 @@
                     <td th:text="${flight.direction.airline}"></td>
                     <td th:text="${flight.flyDate}"></td>
                     <td th:text="${flight.originalPrice+' '+flight.currency}"></td>
-                    <td th:text="${flight.originalPrice+' '+flight.currency}"></td>
-                    <td><a th:href="@{flight.flightUrl}">Click</a>
+                    <td th:text="${#numbers.formatDecimal(flight.plnPrice, 0, 2)+' PLN'}"></td>
+                    <td><a th:href="@{${flight.flightUrl}}">Click</a>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
     </div>
+    <a th:href="@{/}">Go Back</a>
 
 </div>
 

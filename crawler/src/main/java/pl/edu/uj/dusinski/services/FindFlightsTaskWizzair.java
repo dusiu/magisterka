@@ -6,7 +6,6 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import pl.edu.uj.dusinski.CurrencyResolverUtils;
 import pl.edu.uj.dusinski.JmsPublisher;
 import pl.edu.uj.dusinski.WebDriverMangerService;
 import pl.edu.uj.dusinski.dao.Direction;
@@ -15,17 +14,18 @@ import pl.edu.uj.dusinski.dao.FlightDetails;
 import java.time.LocalDate;
 import java.util.concurrent.Callable;
 
+import static pl.edu.uj.dusinski.CurrencyResolverUtils.resolveCurrencyFromSymbol;
 import static pl.edu.uj.dusinski.services.FlightsDetailsFinderService.logTaskFinished;
 
 public class FindFlightsTaskWizzair implements Callable<Void> {
     private static final Logger Log = LoggerFactory.getLogger(FindFlightsTaskWizzair.class);
-    private final String infoClassName = "booking-flow__flight-select__chart__day__info";
 
     private final WebDriverMangerService webDriverMangerService;
     private final String url;
     private final JmsPublisher jmsPublisher;
     private final Direction direction;
     private final int daysToCheck;
+    private final String infoClassName = "booking-flow__flight-select__chart__day__info";
 
     public FindFlightsTaskWizzair(WebDriverMangerService webDriverMangerService, String url, JmsPublisher jmsPublisher, Direction direction, int daysToCheck) {
         this.webDriverMangerService = webDriverMangerService;
@@ -57,13 +57,13 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
                     String dateTime = webDriver.findElements(By.className(infoClassName)).get(i).findElement(By.tagName("time")).getAttribute("datetime");
                     LocalDate date = LocalDate.parse(dateTime.substring(0, dateTime.indexOf("T")));
                     String symbol = "";
-                    CurrencyResolverUtils.resolveCurrencyFromSymbol(symbol, direction.getFromCode());
+                    resolveCurrencyFromSymbol(symbol, direction.getFromCode());
                     try {
                         String priceWithCurrencySymbol = webDriver.findElements(By.className(infoClassName)).get(i)
                                 .findElement(By.className("booking-flow__flight-select__chart__day__price")).getText();
                         String price = priceWithCurrencySymbol.replaceAll("[^\\.0123456789]", "");
                         String currencySymbol = priceWithCurrencySymbol.replaceAll("[\\.,0123456789]", "");
-                        String currency = CurrencyResolverUtils.resolveCurrencyFromSymbol(currencySymbol, direction.getFromCode());
+                        String currency = resolveCurrencyFromSymbol(currencySymbol, direction.getFromCode());
                         jmsPublisher.publishNewFlightDetails(new FlightDetails(direction.getId() + date, date, direction, Double.valueOf(price), currency));
                         directionNo++;
                     } catch (NoSuchElementException e) {

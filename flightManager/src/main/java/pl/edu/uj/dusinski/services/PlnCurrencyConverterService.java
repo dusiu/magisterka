@@ -17,7 +17,6 @@ public class PlnCurrencyConverterService implements BiFunction<String, Double, D
 
     @Override
     public Double apply(String currency, Double price) {
-//        todo finish this
-        return price;
+        return currencyRatioProviderService.apply(currency) * price;
     }
 }

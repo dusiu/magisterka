@@ -3,6 +3,9 @@ package pl.edu.uj.dusinski.dao;
 import org.apache.commons.lang3.builder.ToStringBuilder;
 import org.apache.commons.lang3.builder.ToStringStyle;
 
+import javax.annotation.concurrent.Immutable;
+
+@Immutable
 public class EnrichedFlightDetails extends FlightDetails {
 
     private final double plnPrice;

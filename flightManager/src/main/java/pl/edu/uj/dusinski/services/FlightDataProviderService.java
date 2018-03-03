@@ -29,7 +29,7 @@ public class FlightDataProviderService {
     private final Map<String, AirportDetails> idAirportsMap = new HashMap<>();
     private final String databaseManagerUrl;
     private final String flyFromUrl = "/flights/flyFrom";
-    private final String flyGetDirectionsUrl = "/flights/getAllAirports/";
+    private final String flyGetDirectionsUrl = "/flights/getDirections/";
     private final String airportsUrl = "/flights/getAllAirports";
     private final String flightsDetailsUrl = "/flights/flightDetails/";
     private final Gson gson = new Gson();
