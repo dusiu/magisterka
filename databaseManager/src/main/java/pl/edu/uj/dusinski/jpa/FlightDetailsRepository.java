@@ -6,11 +6,12 @@ import pl.edu.uj.dusinski.dao.FlightDetails;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface FlightDetailsRepository extends MongoRepository<FlightDetails, String> {
 
     List<FlightDetails> findByDirectionIn(List<Direction> directions);
 
-    List<FlightDetails> findByDirectionAndFlyDateBetween(Direction direction, LocalDate start, LocalDate end);
+    Optional<FlightDetails> findTopByDirectionAndFlyDateBetweenOrderByOriginalPrice(Direction direction, LocalDate start, LocalDate end);
 
 }

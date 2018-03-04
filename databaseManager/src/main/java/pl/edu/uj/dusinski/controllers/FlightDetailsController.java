@@ -14,6 +14,7 @@ import pl.edu.uj.dusinski.jpa.FlightDetailsRepository;
 
 import java.time.LocalDate;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.function.BiPredicate;
@@ -95,24 +96,24 @@ public class FlightDetailsController {
         }
 
         List<FlightDetailsBothWay> bothWayFlightsMap = flightDetails.stream()
-                .map(v -> new FlightDetailsBothWay(v,
-                        flightDetailsRepository.findByDirectionAndFlyDateBetween(
-                                findOppositeDirection(v), prepareStartDate(v, request), prepareEndDate(v, request))
-                ))
-                .filter(v -> v.getTo().size() > 0)
+                .sorted(Comparator.comparingDouble(FlightDetails::getOriginalPrice))
+                .limit(100)
+                .map(v -> flightDetailsRepository.findTopByDirectionAndFlyDateBetweenOrderByOriginalPrice(
+                        findOppositeDirection(v), prepareStartDate(v, request), prepareEndDate(v, request))
+                        .map(toFlight -> new FlightDetailsBothWay(v, toFlight)).orElse(null))
+                .filter(Objects::nonNull)
                 .collect(Collectors.toList());
 
         Log.info("Returning flight details from {} to {}", request.getFromCode(), request.getToCode());
         return gson.toJson(bothWayFlightsMap);
     }
 
-    private LocalDate prepareEndDate(FlightDetails v, FlightDetailsRequest request) {
-        return v.getFlyDate().plusDays(request.getDaysToStay());
+    private LocalDate prepareStartDate(FlightDetails v, FlightDetailsRequest request) {
+        return v.getFlyDate().plusDays(request.getMinDaysToStay());
     }
 
-    private LocalDate prepareStartDate(FlightDetails v, FlightDetailsRequest request) {
-        return v.getFlyDate().minusDays(request.getDaysToStay()).isBefore(LocalDate.now().plusDays(1)) ?
-                LocalDate.now().plusDays(1) : v.getFlyDate().minusDays(request.getDaysToStay());
+    private LocalDate prepareEndDate(FlightDetails v, FlightDetailsRequest request) {
+        return v.getFlyDate().plusDays(request.getMaxDaysToStay());
     }
 
     private Direction findOppositeDirection(FlightDetails flightDetails) {

@@ -28,6 +28,7 @@
                     <th>To</th>
                     <th>Airline</th>
                     <th>Date</th>
+                    <th>Day of week</th>
                     <th>Original price</th>
                     <th>Converted Price</th>
                     <th>Link</th>
@@ -39,6 +40,7 @@
                     <td th:text="${flight.toAirport.name}"></td>
                     <td th:text="${flight.direction.airline}"></td>
                     <td th:text="${flight.flyDate}"></td>
+                    <td th:text="${#temporals.dayOfWeekName(flight.flyDate)}"></td>
                     <td th:text="${flight.originalPrice+' '+flight.currency}"></td>
                     <td th:text="${#numbers.formatDecimal(flight.plnPrice,0,2)+' PLN'}"></td>
                     <td><a target="_blank" th:href="@{${flight.flightUrl}}">Click</a>

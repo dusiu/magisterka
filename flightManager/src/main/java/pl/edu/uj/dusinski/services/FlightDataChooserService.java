@@ -7,7 +7,6 @@ import pl.edu.uj.dusinski.dao.*;
 
 import java.util.Comparator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -37,8 +36,7 @@ public class FlightDataChooserService {
         if (flightDetailsRequest.isBothWay()) {
             List<FlightDetailsBothWay> bothWaysFlightDetails = flightDataProviderService.getBothWaysFlightDetails(flightDetailsRequest);
             return bothWaysFlightDetails.stream()
-                    .map(v -> Map.entry(flightEnricher.apply(v.getFrom()), getCheapestFlight(v.getTo())))
-                    .map(v -> new EnrichedFlightDetailsGroup(v.getKey(), v.getValue()))
+                    .map(v -> new EnrichedFlightDetailsGroup(flightEnricher.apply(v.getFrom()), flightEnricher.apply(v.getTo())))
                     .sorted(Comparator.comparingDouble(EnrichedFlightDetailsGroup::getTotalPlnPrice))
                     .limit(maxShownFlight)
                     .collect(Collectors.toList());
@@ -50,14 +48,6 @@ public class FlightDataChooserService {
                     .limit(maxShownFlight)
                     .collect(Collectors.toList());
         }
-    }
-
-    private EnrichedFlightDetails getCheapestFlight(List<FlightDetails> value) {
-        return value.stream()
-                .map(flightEnricher)
-                .sorted(Comparator.comparingDouble(EnrichedFlightDetails::getPlnPrice))
-                .findFirst()
-                .get();
     }
 
     private AirportDetails getAirportBasedOnCode(String fromCode, Airline airline) {

@@ -19,7 +19,7 @@ public class FlightDetailsUpdaterService {
     }
 
     public void updateFlightDetails(FlightDetails flightDetails) {
-        Log.info("Adding new airport details with id:{}", flightDetails.getId());
+        Log.info("Adding new flight details with id:{}", flightDetails.getId());
         flightDetailsRepository.save(flightDetails);
     }
 }

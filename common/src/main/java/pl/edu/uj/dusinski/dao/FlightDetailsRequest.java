@@ -9,7 +9,8 @@ public class FlightDetailsRequest {
 
     private String fromCode;
     private String toCode;
-    private int daysToStay;
+    private int minDaysToStay;
+    private int maxDaysToStay;
     private boolean bothWay;
 
     public FlightDetailsRequest() {
@@ -18,12 +19,14 @@ public class FlightDetailsRequest {
     @JsonCreator
     public FlightDetailsRequest(@JsonProperty("fromCode") String fromCode,
                                 @JsonProperty("toCode") String toCode,
-                                @JsonProperty("daysToStay") int daysToStay,
+                                @JsonProperty("minDaysToStay") int minDaysToStay,
+                                @JsonProperty("maxDaysToStay") int maxDaysToStay,
                                 @JsonProperty("bothWay") boolean bothWay) {
         this.fromCode = fromCode;
         this.toCode = toCode;
-        this.daysToStay = daysToStay;
+        this.minDaysToStay = minDaysToStay;
         this.bothWay = bothWay;
+        this.maxDaysToStay = maxDaysToStay;
     }
 
     public boolean isBothWay() {
@@ -50,12 +53,20 @@ public class FlightDetailsRequest {
         this.toCode = toCode;
     }
 
-    public int getDaysToStay() {
-        return daysToStay;
+    public int getMinDaysToStay() {
+        return minDaysToStay;
     }
 
-    public void setDaysToStay(int daysToStay) {
-        this.daysToStay = daysToStay;
+    public void setMinDaysToStay(int minDaysToStay) {
+        this.minDaysToStay = minDaysToStay;
+    }
+
+    public void setMaxDaysToStay(int maxDaysToStay) {
+        this.maxDaysToStay = maxDaysToStay;
+    }
+
+    public int getMaxDaysToStay() {
+        return maxDaysToStay;
     }
 
     @Override

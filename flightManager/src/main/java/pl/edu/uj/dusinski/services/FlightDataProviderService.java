@@ -29,7 +29,7 @@ public class FlightDataProviderService {
     private static final int HOUR_IN_MS = 60 * 60 * 1000;
 
     private final RestTemplate restTemplate;
-    private final Set<AirportDetails> directionFromWhereFlyTo = new HashSet<>();
+    private final List<AirportDetails> directionFromWhereFlyTo = new ArrayList<>();
     private final Map<String, AirportDetails> idAirportsMap = new HashMap<>();
     private final String databaseManagerUrl;
     private final String flyFromUrl = "/flights/flyFrom";
@@ -53,7 +53,9 @@ public class FlightDataProviderService {
             AirportDetails[] fromDirection = gson.fromJson(restTemplate.getForObject(databaseManagerUrl + flyFromUrl, String.class), AirportDetails[].class);
             if (fromDirection != null && fromDirection.length > 0) {
                 directionFromWhereFlyTo.clear();
-                directionFromWhereFlyTo.addAll(Arrays.asList(fromDirection));
+                directionFromWhereFlyTo.addAll(Arrays.stream(fromDirection)
+                        .sorted(Comparator.comparing(AirportDetails::getName))
+                        .collect(Collectors.toList()));
                 Log.info("Updated {} directions from which can fly", fromDirection.length);
             }
             AirportDetails[] allAirports = gson.fromJson(restTemplate.getForObject(databaseManagerUrl + airportsUrl, String.class), AirportDetails[].class);
@@ -86,7 +88,7 @@ public class FlightDataProviderService {
         return idAirportsMap.get(id);
     }
 
-    public Set<AirportDetails> getDirectionFromWhereFlyTo() {
+    public List<AirportDetails> getDirectionFromWhereFlyTo() {
         return directionFromWhereFlyTo;
     }
 
