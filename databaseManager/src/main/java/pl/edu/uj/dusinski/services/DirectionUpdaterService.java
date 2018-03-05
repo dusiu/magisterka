@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import pl.edu.uj.dusinski.dao.Airline;
 import pl.edu.uj.dusinski.dao.Direction;
 import pl.edu.uj.dusinski.dao.DirectionRefreshDetails;
 import pl.edu.uj.dusinski.jpa.DirectionRefreshDetailsRepository;
@@ -12,8 +13,6 @@ import pl.edu.uj.dusinski.jpa.DirectionRepository;
 import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
-
-import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
 
 @Service
 public class DirectionUpdaterService {
@@ -29,14 +28,14 @@ public class DirectionUpdaterService {
         this.refreshDetailsRepository = refreshDetailsRepository;
     }
 
-    public void updateDirectionsInDatabase() {
+    public void updateDirectionsInDatabase(Airline airline) {
         if (directions.isEmpty()) {
             Log.info("There are no directions to update");
+            refreshDetailsRepository.save(new DirectionRefreshDetails(LocalDateTime.now(), directions.size(), airline));
             return;
         }
         directionRepository.saveAll(directions);
-        Log.info("There are {} new direction in database", directions.size());
-        refreshDetailsRepository.save(new DirectionRefreshDetails(LocalDateTime.now(), directions.size(), WIZZAIR));
+        Log.info("There are {} new direction saved into database", directions.size());
         directions.clear();
     }
 
@@ -44,7 +43,7 @@ public class DirectionUpdaterService {
         if (directionRepository.findById(direction.getId()).isPresent()) {
             Log.info("Direction {} already exist in database", direction.getId());
         } else {
-            Log.info("Adding new direction {} to database", direction.getId());
+            Log.info("Adding new direction {} to update", direction.getId());
             directions.add(direction);
         }
     }

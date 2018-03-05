@@ -16,28 +16,47 @@ import java.time.LocalDateTime;
 public class DirectionRefreshService {
     private static final Logger Log = LoggerFactory.getLogger(DirectionRefreshService.class);
 
-    public final String databaseManagerUrl;
-    private final DirectionFinderService directionFinderService;
+    private final String databaseManagerUrl;
+    private final WizzairDirectionFinderService wizzairDirectionFinderService;
+    private final RyanairDirectionFinderService ryanairDirectionFinderService;
     private final RestTemplate restTemplate;
 
-    public DirectionRefreshService(DirectionFinderService directionFinderService, RestTemplate restTemplate, @Value("${database.manager.url}") String databaseManagerUrl) {
+    public DirectionRefreshService(WizzairDirectionFinderService wizzairDirectionFinderService,
+                                   RestTemplate restTemplate,
+                                   @Value("${database.manager.url}") String databaseManagerUrl,
+                                   RyanairDirectionFinderService ryanairDirectionFinderService) {
         this.databaseManagerUrl = databaseManagerUrl;
-        this.directionFinderService = directionFinderService;
+        this.wizzairDirectionFinderService = wizzairDirectionFinderService;
         this.restTemplate = restTemplate;
+        this.ryanairDirectionFinderService = ryanairDirectionFinderService;
     }
 
-    @Scheduled(fixedDelay = 10000)
+    @Scheduled(fixedDelay = 24 * 60 * 1000)
     public void updateDirectionIfNeeded() {
         Log.info("Checking if we want to update directions");
+        checkWizzairDirections();
+        checkRyanairDirections();
+    }
+
+    private void checkRyanairDirections() {
+        DirectionRefreshDetails latest = restTemplate
+                .getForObject(databaseManagerUrl + "/directionManager/lastUpdatedTimeRyanair", DirectionRefreshDetails.class);
+
+        if (latest != null && LocalDateTime.now().minusWeeks(1).isAfter(latest.getUpdatingTime())) {
+            if (ryanairDirectionFinderService.updateDirections()) {
+                restTemplate.getForObject(databaseManagerUrl + "/directionManager/updateNewDirections/RYANAIR", String.class);
+            }
+        }
+    }
+
+    private void checkWizzairDirections() {
         DirectionRefreshDetails latest = restTemplate
                 .getForObject(databaseManagerUrl + "/directionManager/lastUpdatedTimeWizzair", DirectionRefreshDetails.class);
 
-        boolean b = latest != null && LocalDateTime.now().minusWeeks(1).isAfter(latest.getUpdatingTime());
-//        if (!latest.isPresent() || true) {
-        if (b) {
-            Log.info("Updating direction list");
-            directionFinderService.updateDirections();
-            restTemplate.getForObject(databaseManagerUrl + "/directionManager/updateNewDirections/WIZZAIR", String.class);
+        if (latest != null && LocalDateTime.now().minusWeeks(1).isAfter(latest.getUpdatingTime())) {
+            if (wizzairDirectionFinderService.updateDirections()) {
+                restTemplate.getForObject(databaseManagerUrl + "/directionManager/updateNewDirections/WIZZAIR", String.class);
+            }
         }
     }
 }

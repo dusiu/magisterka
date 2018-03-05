@@ -4,7 +4,9 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import pl.edu.uj.dusinski.dao.Airline;
 import pl.edu.uj.dusinski.dao.DirectionRefreshDetails;
 
+import java.util.Optional;
+
 public interface DirectionRefreshDetailsRepository extends MongoRepository<DirectionRefreshDetails, String> {
 
-    DirectionRefreshDetails findTopByAirlineOrderByIdDesc(Airline airline);
+    Optional<DirectionRefreshDetails> findTopByAirlineOrderByIdDesc(Airline airline);
 }

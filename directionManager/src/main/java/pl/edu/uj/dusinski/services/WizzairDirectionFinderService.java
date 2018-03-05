@@ -3,12 +3,9 @@ package pl.edu.uj.dusinski.services;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.stereotype.Service;
 import pl.edu.uj.dusinski.JmsPublisher;
 import pl.edu.uj.dusinski.WebDriverMangerService;
@@ -18,26 +15,25 @@ import pl.edu.uj.dusinski.dao.Direction;
 import java.util.*;
 
 import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
+import static pl.edu.uj.dusinski.services.DirectionsUtils.waitUntilElementIsReady;
 
 @Service
-@DependsOn("webDriverMangerService")
-public class DirectionFinderService {
+public class WizzairDirectionFinderService {
 
-    private static final Logger Log = LoggerFactory.getLogger(DirectionFinderService.class);
+    private static final Logger Log = LoggerFactory.getLogger(WizzairDirectionFinderService.class);
     private static final String OPEN_BRACKET = "(";
     private static final String CLOSE_BRACKET = ")";
     private static final String WIZZIAR_FLIGHTS = "https://wizzair.com/en-gb/flights";
-    private static final int WAIT_TIMEOUT = 30;
     private final WebDriverMangerService webDriverMangerService;
     private final JmsPublisher jmsPublisher;
 
     @Autowired
-    public DirectionFinderService(WebDriverMangerService webDriverMangerService, JmsPublisher jmsPublisher) {
+    public WizzairDirectionFinderService(WebDriverMangerService webDriverMangerService, JmsPublisher jmsPublisher) {
         this.webDriverMangerService = webDriverMangerService;
         this.jmsPublisher = jmsPublisher;
     }
 
-    public void updateDirections() {
+    public boolean updateDirections() {
         Log.info("Updating list of the directions");
 
         WebDriver webDriver = null;
@@ -50,16 +46,17 @@ public class DirectionFinderService {
                         new AbstractMap.SimpleImmutableEntry<>(airport.getAttribute("href"), airport.getText()));
             }
             int i = 0;
-//            airportsUrlNameList = airportsUrlNameList.subList(0, 20);
             for (Map.Entry<String, String> airportUrlName : airportsUrlNameList) {
                 getAirportDirections(airportUrlName.getKey(), airportUrlName.getValue(), webDriver);
                 Log.info("Checked {} from {} airports", ++i, airportsUrlNameList.size());
             }
         } catch (Exception e) {
             Log.error("Exception during updating directions", e);
+            return false;
         } finally {
             webDriverMangerService.returnWebDriver(webDriver);
         }
+        return true;
     }
 
     private List<WebElement> getAirports(WebDriver webDriver) {
@@ -74,11 +71,6 @@ public class DirectionFinderService {
         return airports;
     }
 
-    private void waitUntilElementIsReady(WebDriver driver, By by) {
-        new WebDriverWait(driver, WAIT_TIMEOUT)
-                .until(ExpectedConditions.elementToBeClickable(by));
-    }
-
     private List<Direction> getAirportDirections(String airportUrl, String airportName, WebDriver webDriver) {
         Log.info("checking airport: {} with url: {}", airportName, airportUrl);
         try {
@@ -89,7 +81,7 @@ public class DirectionFinderService {
             String airportFullName = fullNameWithCode.substring(0, fullNameWithCode.lastIndexOf(OPEN_BRACKET)).trim();
             String fromCode = fullNameWithCode
                     .substring(fullNameWithCode.lastIndexOf(OPEN_BRACKET) + 1, fullNameWithCode.lastIndexOf(CLOSE_BRACKET));
-            jmsPublisher.pusblishAirportDetails(new AirportDetails(airportName, airportFullName, "", fromCode, WIZZAIR));
+            jmsPublisher.publishAirportDetails(new AirportDetails(airportName, airportFullName, "", fromCode, WIZZAIR));
             waitUntilElementIsReady(webDriver, By.id("search-departure-station"));
             webDriver.findElement(By.id("search-departure-station")).click();
             waitUntilElementIsReady(webDriver, By.className("locations-container__location"));

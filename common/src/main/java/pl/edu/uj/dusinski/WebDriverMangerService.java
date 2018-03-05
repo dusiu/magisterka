@@ -1,6 +1,5 @@
 package pl.edu.uj.dusinski;
 
-import org.openqa.selenium.Dimension;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -47,7 +46,6 @@ public class WebDriverMangerService {
             ((JavascriptExecutor) driver).executeScript("window.open()");
             ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
             driver.switchTo().window(tabs.get(1));
-            driver.manage().window().setSize(new Dimension(800, 600));
         } catch (InterruptedException e) {
             Log.error("Error during waiting for webDriver instance", e);
         }

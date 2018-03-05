@@ -21,7 +21,7 @@ public class JmsPublisher {
         this.jmsTemplate = jmsTemplate;
     }
 
-    public void pusblishAirportDetails(AirportDetails airportDetails) {
+    public void publishAirportDetails(AirportDetails airportDetails) {
         Log.info("Publishing new airport details {}", airportDetails.getId());
         jmsTemplate.convertAndSend("airportDetailsQueue", airportDetails);
     }

@@ -13,6 +13,7 @@ import pl.edu.uj.dusinski.jpa.DirectionRefreshDetailsRepository;
 import pl.edu.uj.dusinski.services.DirectionUpdaterService;
 
 import java.time.LocalDateTime;
+import java.util.Optional;
 
 @Controller
 @RequestMapping("/directionManager")
@@ -30,22 +31,33 @@ public class DirectionManagerController {
         this.directionUpdaterService = directionUpdaterService;
     }
 
-    @RequestMapping(value = "/lastUpdatedTimeWizzair", produces = "application/json")
+    @RequestMapping(value = "/lastUpdatedTimeRyanair", produces = "application/json")
     @ResponseBody
-    public String directionLatUpdatedTime() {
+    public String directionLatUpdatedTimeRyanair() {
         Log.info("Received last updated time request");
-        DirectionRefreshDetails topById = refreshDetailsRepository.findTopByAirlineOrderByIdDesc(Airline.WIZZAIR);
-        if (topById == null) {
+        Optional<DirectionRefreshDetails> topById = refreshDetailsRepository.findTopByAirlineOrderByIdDesc(Airline.RYANAIR);
+        if (!topById.isPresent()) {
             return emptyDirectionRefreshDetails.toString();
         }
-        return topById.toString();
+        return topById.get().toString();
+    }
+
+    @RequestMapping(value = "/lastUpdatedTimeWizzair", produces = "application/json")
+    @ResponseBody
+    public String directionLatUpdatedTimeWizzair() {
+        Log.info("Received last updated time request");
+        Optional<DirectionRefreshDetails> topById = refreshDetailsRepository.findTopByAirlineOrderByIdDesc(Airline.WIZZAIR);
+        if (!topById.isPresent()) {
+            return emptyDirectionRefreshDetails.toString();
+        }
+        return topById.get().toString();
     }
 
     @RequestMapping(value = "/updateNewDirections/{airline}")
     @ResponseBody
     public String saveNewDirections(@PathVariable("airline") Airline airline) {
         Log.info("Updating directions in database for {}", airline);
-        directionUpdaterService.updateDirectionsInDatabase();
+        directionUpdaterService.updateDirectionsInDatabase(airline);
         return "ok";
     }
 }
