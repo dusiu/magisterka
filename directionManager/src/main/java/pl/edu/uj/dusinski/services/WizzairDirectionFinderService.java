@@ -28,7 +28,8 @@ public class WizzairDirectionFinderService {
     private final JmsPublisher jmsPublisher;
 
     @Autowired
-    public WizzairDirectionFinderService(WebDriverMangerService webDriverMangerService, JmsPublisher jmsPublisher) {
+    public WizzairDirectionFinderService(WebDriverMangerService webDriverMangerService,
+                                         JmsPublisher jmsPublisher) {
         this.webDriverMangerService = webDriverMangerService;
         this.jmsPublisher = jmsPublisher;
     }

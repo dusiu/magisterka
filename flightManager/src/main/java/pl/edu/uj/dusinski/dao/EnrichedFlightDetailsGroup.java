@@ -5,7 +5,8 @@ public class EnrichedFlightDetailsGroup {
     private final EnrichedFlightDetails to;
     private final double totalPlnPrice;
 
-    public EnrichedFlightDetailsGroup(EnrichedFlightDetails from, EnrichedFlightDetails to) {
+    public EnrichedFlightDetailsGroup(EnrichedFlightDetails from,
+                                      EnrichedFlightDetails to) {
         this.from = from;
         this.to = to;
         this.totalPlnPrice = from.getPlnPrice() + to.getPlnPrice();

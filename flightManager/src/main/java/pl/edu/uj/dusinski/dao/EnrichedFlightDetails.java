@@ -13,7 +13,11 @@ public class EnrichedFlightDetails extends FlightDetails {
     private final AirportDetails fromAirport;
     private final AirportDetails toAirport;
 
-    public EnrichedFlightDetails(FlightDetails flightDetails, double plnPrice, String flightUrl, AirportDetails fromAirport, AirportDetails toAirport) {
+    public EnrichedFlightDetails(FlightDetails flightDetails,
+                                 double plnPrice,
+                                 String flightUrl,
+                                 AirportDetails fromAirport,
+                                 AirportDetails toAirport) {
         super(flightDetails.getId(), flightDetails.getFlyDate(), flightDetails.getDirection(), flightDetails.getOriginalPrice(), flightDetails.getCurrency());
         this.plnPrice = plnPrice;
         this.flightUrl = flightUrl;

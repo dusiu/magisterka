@@ -27,13 +27,19 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
     private final Direction direction;
     private final int daysToCheck;
     private final String infoClassName = "booking-flow__flight-select__chart__day__info";
+    private final int taskTimeout;
 
-    FindFlightsTaskWizzair(WebDriverMangerService webDriverMangerService, JmsPublisher jmsPublisher, Direction direction, int daysToCheck) {
+    FindFlightsTaskWizzair(WebDriverMangerService webDriverMangerService,
+                           JmsPublisher jmsPublisher,
+                           Direction direction,
+                           int daysToCheck,
+                           int taskTimeout) {
         this.webDriverMangerService = webDriverMangerService;
         this.url = String.format(WIZZAIR_FLIGHTS_URL, direction.getFromCode(), direction.getToCode(), LocalDate.now().plusDays(1).toString());
         this.jmsPublisher = jmsPublisher;
         this.direction = direction;
         this.daysToCheck = daysToCheck;
+        this.taskTimeout = taskTimeout * 1000;
     }
 
     @Override
@@ -43,7 +49,7 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
         Thread t = new Thread(() -> findFlightDetails(webDriver), Thread.currentThread().getName());
         t.start();
         try {
-            t.join(90_000);
+            t.join(taskTimeout);
         } catch (InterruptedException e) {
         }
         if (t.isAlive()) {

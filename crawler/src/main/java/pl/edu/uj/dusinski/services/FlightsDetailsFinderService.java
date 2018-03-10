@@ -37,19 +37,23 @@ public class FlightsDetailsFinderService {
     private static AtomicInteger doneTask = new AtomicInteger(0);
     private final RestTemplate restTemplate;
     private final int halfADayInMs = 12 * 60 * 60 * 1000;
+    private final int taskTimeout;
 
     @Autowired
     public FlightsDetailsFinderService(DirectionsProviderService directionsProviderService,
                                        WebDriverMangerService webDriverMangerService,
                                        JmsPublisher jmsPublisher,
                                        @Value("${web.driver.instances}") int webDriverInstances,
-                                       @Value("${days.to.check}") int daysToCheck, RestTemplate restTemplate) {
+                                       @Value("${days.to.check}") int daysToCheck,
+                                       RestTemplate restTemplate,
+                                       @Value("task.timeout.seconds") int taskTimeout) {
         this.directionsProviderService = directionsProviderService;
         this.webDriverMangerService = webDriverMangerService;
         this.jmsPublisher = jmsPublisher;
         this.executorService = Executors.newFixedThreadPool(webDriverInstances);
         this.daysToCheck = daysToCheck;
         this.restTemplate = restTemplate;
+        this.taskTimeout = taskTimeout;
     }
 
     @Scheduled(fixedDelay = halfADayInMs)
@@ -79,7 +83,7 @@ public class FlightsDetailsFinderService {
 
     private Callable<Void> createFindFlightTask(Direction direction, Airline airline) {
         if (WIZZAIR.equals(airline)) {
-            return new FindFlightsTaskWizzair(webDriverMangerService, jmsPublisher, direction, daysToCheck);
+            return new FindFlightsTaskWizzair(webDriverMangerService, jmsPublisher, direction, daysToCheck, taskTimeout);
         }
         return new FindFlightsTaskRyanair(restTemplate, jmsPublisher, direction, daysToCheck, directionsProviderService);
     }

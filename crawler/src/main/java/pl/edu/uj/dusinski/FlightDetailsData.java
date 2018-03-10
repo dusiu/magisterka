@@ -68,7 +68,9 @@ public class FlightDetailsData {
         private final AirportData arrivalAirport;
         private final String departureDate;
 
-        public FlightData(AirportData departureAirport, AirportData arrivalAirport, String departureDate) {
+        public FlightData(AirportData departureAirport,
+                          AirportData arrivalAirport,
+                          String departureDate) {
             this.departureAirport = departureAirport;
             this.arrivalAirport = arrivalAirport;
             this.departureDate = departureDate;

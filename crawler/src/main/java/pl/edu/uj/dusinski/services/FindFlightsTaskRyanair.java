@@ -26,7 +26,10 @@ public class FindFlightsTaskRyanair implements Callable<Void> {
     private final Gson gson = new Gson();
     private final DirectionsProviderService directionsProviderService;
 
-    public FindFlightsTaskRyanair(RestTemplate restTemplate, JmsPublisher jmsPublisher, Direction direction, int daysToCheck, DirectionsProviderService directionsProviderService) {
+    public FindFlightsTaskRyanair(RestTemplate restTemplate,
+                                  JmsPublisher jmsPublisher, Direction direction,
+                                  int daysToCheck,
+                                  DirectionsProviderService directionsProviderService) {
         this.restTemplate = restTemplate;
         this.jmsPublisher = jmsPublisher;
         this.direction = direction;

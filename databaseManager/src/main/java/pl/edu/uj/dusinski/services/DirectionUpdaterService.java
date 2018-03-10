@@ -23,7 +23,8 @@ public class DirectionUpdaterService {
     private final DirectionRefreshDetailsRepository refreshDetailsRepository;
 
     @Autowired
-    public DirectionUpdaterService(DirectionRepository directionRepository, DirectionRefreshDetailsRepository refreshDetailsRepository) {
+    public DirectionUpdaterService(DirectionRepository directionRepository,
+                                   DirectionRefreshDetailsRepository refreshDetailsRepository) {
         this.directionRepository = directionRepository;
         this.refreshDetailsRepository = refreshDetailsRepository;
     }

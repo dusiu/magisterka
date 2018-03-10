@@ -16,7 +16,6 @@ import java.time.LocalDate;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
-import java.util.function.BiPredicate;
 import java.util.stream.Collectors;
 
 @Controller
@@ -29,7 +28,6 @@ public class FlightDetailsController {
     private final AirportDetailsRepository airportDetailsRepository;
     private final DirectionRepository directionRepository;
     private final String anyway = "ANYWAY";
-    private final BiPredicate<FlightDetails, String> goToCodeOrAnyway = (v, toCode) -> v.getDirection().getToCode().equals(toCode) || anyway.equals(toCode);
 
     @Autowired
     public FlightDetailsController(FlightDetailsRepository flightDetailsRepository,

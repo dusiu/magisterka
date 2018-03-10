@@ -31,7 +31,8 @@ public class DirectionsProviderService {
     private final Map<String, Direction> ryanairDirectionMap = new HashMap<>();
 
     @Autowired
-    public DirectionsProviderService(RestTemplate restTemplate, @Value("${database.manager.url}") String databaseManagerUrl) {
+    public DirectionsProviderService(RestTemplate restTemplate,
+                                     @Value("${database.manager.url}") String databaseManagerUrl) {
         this.restTemplate = restTemplate;
         this.databaseManagerUrl = databaseManagerUrl;
     }
