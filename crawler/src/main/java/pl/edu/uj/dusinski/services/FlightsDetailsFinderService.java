@@ -46,7 +46,7 @@ public class FlightsDetailsFinderService {
                                        @Value("${web.driver.instances}") int webDriverInstances,
                                        @Value("${days.to.check}") int daysToCheck,
                                        RestTemplate restTemplate,
-                                       @Value("task.timeout.seconds") int taskTimeout) {
+                                       @Value("${task.timeout.seconds}") int taskTimeout) {
         this.directionsProviderService = directionsProviderService;
         this.webDriverMangerService = webDriverMangerService;
         this.jmsPublisher = jmsPublisher;
