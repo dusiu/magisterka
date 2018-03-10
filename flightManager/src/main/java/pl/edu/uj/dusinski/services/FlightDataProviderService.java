@@ -13,12 +13,10 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import pl.edu.uj.dusinski.dao.AirportDetails;
-import pl.edu.uj.dusinski.dao.FlightDetails;
-import pl.edu.uj.dusinski.dao.FlightDetailsBothWay;
-import pl.edu.uj.dusinski.dao.FlightDetailsRequest;
+import pl.edu.uj.dusinski.dao.*;
 
 import java.lang.reflect.Type;
+import java.text.Collator;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -39,6 +37,8 @@ public class FlightDataProviderService {
     private final Gson gson = new Gson();
     private final Type flightDetailsType = new TypeToken<Set<FlightDetails>>() {
     }.getType();
+    private final Collator collator = Collator.getInstance(new Locale("pl", "PL"));
+
 
     @Autowired
     public FlightDataProviderService(RestTemplate restTemplate,
@@ -53,9 +53,10 @@ public class FlightDataProviderService {
             AirportDetails[] fromDirection = gson.fromJson(restTemplate.getForObject(databaseManagerUrl + flyFromUrl, String.class), AirportDetails[].class);
             if (fromDirection != null && fromDirection.length > 0) {
                 directionFromWhereFlyTo.clear();
-                directionFromWhereFlyTo.addAll(Arrays.stream(fromDirection)
-                        .sorted(Comparator.comparing(AirportDetails::getName))
-                        .collect(Collectors.toList()));
+                List<AirportDetails> directions = Arrays.stream(fromDirection)
+                        .sorted((v1, v2) -> collator.compare(v1.getName(), v2.getName()))
+                        .collect(Collectors.toList());
+                directionFromWhereFlyTo.addAll(directions);
                 Log.info("Updated {} directions from which can fly", fromDirection.length);
             }
             AirportDetails[] allAirports = gson.fromJson(restTemplate.getForObject(databaseManagerUrl + airportsUrl, String.class), AirportDetails[].class);
@@ -73,9 +74,12 @@ public class FlightDataProviderService {
 
     public List<AirportDetails> getAirportsForDirection(String direction) {
         try {
-            AirportDetails[] flyToDirection = gson.fromJson(restTemplate.getForObject(databaseManagerUrl + flyGetDirectionsUrl + direction, String.class), AirportDetails[].class);
+            Direction[] flyToDirection = gson.fromJson(restTemplate.getForObject(databaseManagerUrl + flyGetDirectionsUrl + direction, String.class), Direction[].class);
             if (flyToDirection != null && flyToDirection.length > 0) {
-                return new ArrayList<>(Arrays.asList(flyToDirection));
+                return Arrays.stream(flyToDirection)
+                        .map(v -> getAirportDetails(v.getToCode() + v.getAirline()))
+                        .filter(Objects::nonNull)
+                        .collect(Collectors.toList());
             }
             return Collections.emptyList();
         } catch (Exception e) {

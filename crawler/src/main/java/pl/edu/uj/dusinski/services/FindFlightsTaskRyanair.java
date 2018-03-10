@@ -1,130 +1,66 @@
 package pl.edu.uj.dusinski.services;
 
-import org.apache.commons.lang3.math.NumberUtils;
-import org.openqa.selenium.*;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.web.client.RestTemplate;
+import pl.edu.uj.dusinski.FlightDetailsData;
 import pl.edu.uj.dusinski.JmsPublisher;
-import pl.edu.uj.dusinski.WebDriverMangerService;
 import pl.edu.uj.dusinski.dao.Direction;
 import pl.edu.uj.dusinski.dao.FlightDetails;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
+import java.util.concurrent.Callable;
 
-import static org.apache.commons.lang3.StringUtils.isNotBlank;
-import static pl.edu.uj.dusinski.CurrencyResolverUtils.resolveCurrencyFromSymbol;
-import static pl.edu.uj.dusinski.services.FlightsDetailsFinderService.waitForWebsite;
+import static pl.edu.uj.dusinski.dao.Airline.RYANAIR;
+import static pl.edu.uj.dusinski.services.FlightsDetailsFinderService.logTaskFinished;
 
-public class FindFlightsTaskRyanair extends FindFlightsTask {
+public class FindFlightsTaskRyanair implements Callable<Void> {
     private static final Logger Log = LoggerFactory.getLogger(FindFlightsTaskRyanair.class);
 
-    private final static By SLIDER = By.className("slide");
-    private final static DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("d MMMyyyy");
+    private final JmsPublisher jmsPublisher;
+    private final Direction direction;
+    private final int daysToCheck;
+    private final RestTemplate restTemplate;
+    private final String RYANAIR_FLIGHTS_URL = "https://api.ryanair.com/farefinder/3/oneWayFares?&departureAirportIataCode=%s&outboundDepartureDateFrom=%s&outboundDepartureDateTo=%s";
+    private final Gson gson = new Gson();
+    private final DirectionsProviderService directionsProviderService;
 
-
-    FindFlightsTaskRyanair(WebDriverMangerService webDriverMangerService, String url, JmsPublisher jmsPublisher, Direction direction, int daysToCheck) {
-        super(webDriverMangerService, url, jmsPublisher, direction, daysToCheck);
+    public FindFlightsTaskRyanair(RestTemplate restTemplate, JmsPublisher jmsPublisher, Direction direction, int daysToCheck, DirectionsProviderService directionsProviderService) {
+        this.restTemplate = restTemplate;
+        this.jmsPublisher = jmsPublisher;
+        this.direction = direction;
+        this.daysToCheck = daysToCheck;
+        this.directionsProviderService = directionsProviderService;
     }
 
-    protected void findFlightDetails(WebDriver webDriver) {
-        webDriver.manage().deleteAllCookies();
-        webDriver.get(url);
-//        webDriver.get("https://www.ryanair.com/pl/pl/booking/home/CAG/PMF/2018-03-08");
-        while (webDriver.findElements(SLIDER).isEmpty()) {
-            Log.debug("There is no data in {} yet, waiting...", direction.getId());
-            waitForWebsite(webDriver);
+    @Override
+    public Void call() throws Exception {
+        int weeksToCheck = (int) Math.ceil(daysToCheck / 7.0);
+        int publishedFlights = 0;
+        for (int i = 0; i < weeksToCheck; i++) {
+            FlightDetailsData flightDetailsData = gson.fromJson(restTemplate.getForObject(prepareUrl(direction, i), String.class), FlightDetailsData.class);
+            flightDetailsData.getFares().stream()
+                    .map(this::mapToFlightDetails)
+                    .forEach(jmsPublisher::publishNewFlightDetails);
+            publishedFlights += flightDetailsData.getFares().size();
         }
-
-        int checkedFlightsNo = 0;
-        int publishedFlightsNo = 0;
-        for (int i = 0; checkedFlightsNo < daysToCheck; ) {
-            try {
-                String dateString = webDriver.findElements(SLIDER).get(i).findElement(By.className("date")).getText();
-                if (checkedFlightsNo > 0 && checkedFlightsNo % 5 == 0) {
-                    WebElement webElement = webDriver.findElement(By.className("base-carousel")).findElements(By.tagName("button")).get(1);
-                    waitUntilElementIsReady(webDriver, webElement);
-                    while (!isDateParsable(dateString)) {
-                        webElement.click();
-                        waitUntilTextIsPresent(webDriver, webDriver.findElements(SLIDER).get(i).findElement(By.className("date")));
-                        dateString = webDriver.findElements(SLIDER).get(i).findElement(By.className("date")).getText();
-                    }
-                }
-                LocalDate date = parseDate(dateString);
-                WebElement fareString = webDriver.findElements(SLIDER).get(i).findElement(By.className("fare"));
-                while (!isPriceAvailable(fareString.getText())) {
-                    waitUntilPriceAppear(webDriver, webDriver.findElements(SLIDER).get(i).findElement(By.className("fare")));
-                    fareString = webDriver.findElements(SLIDER).get(i).findElement(By.className("fare"));
-                }
-                String priceWithCurrencySymbol = fareString.getText();
-                if (isNotBlank(priceWithCurrencySymbol)) {
-                    String price = getProperPrice(priceWithCurrencySymbol);
-                    if (Double.valueOf(price) > 0) {
-                        String currencySymbol = priceWithCurrencySymbol.replaceAll("[\\.,0123456789]", "");
-                        String currency = resolveCurrencyFromSymbol(currencySymbol.trim(), direction.getFromCode());
-                        FlightDetails flightDetails = new FlightDetails(direction.getId() + date, date, direction, Double.valueOf(price), currency);
-                        Log.info("new flight details {}", flightDetails);
-                        publishedFlightsNo++;
-//                jmsPublisher.publishNewFlightDetails(flightDetails);
-                    }
-                }
-            } catch (StaleElementReferenceException e) {
-                i--;
-                Log.debug("Stale element exception {}", direction.getId());
-                waitForWebsite(webDriver);
-            }
-            checkedFlightsNo++;
-            i++;
-            i = i % 15;
-        }
-        Log.info("Published: {} flights into direction: {}", publishedFlightsNo, direction.getId());
+        Log.info("Published {} flight details for {}", publishedFlights, direction.getFromCode());
+        logTaskFinished();
+        return null;
     }
 
-    private boolean isPriceAvailable(String fareString) {
-        fareString = getProperPrice(fareString);
-        return fareString.isEmpty() || (NumberUtils.isCreatable(fareString) && Double.valueOf(fareString) != 0.0);
+    private FlightDetails mapToFlightDetails(FlightDetailsData.Fare v) {
+        String fromCode = v.getOutbound().getDepartureAirport().getIataCode();
+        String toCode = v.getOutbound().getArrivalAirport().getIataCode();
+        return new FlightDetails(fromCode + toCode + RYANAIR + v.getOutbound().getDepartureDate().toString(),
+                v.getOutbound().getDepartureDate(), directionsProviderService.getFirectionForRyanair(fromCode, toCode),
+                v.getSummary().getPrice().getValue(), v.getSummary().getPrice().getCurrencyCode());
     }
 
-    private String getProperPrice(String fareString) {
-        return fareString.replaceAll(",", ".").replaceAll("[^\\.0123456789]", "");
+    private String prepareUrl(Direction direction, int i) {
+        return String.format(RYANAIR_FLIGHTS_URL, direction.getFromCode(),
+                LocalDate.now().plusDays(1).plusWeeks(i),
+                LocalDate.now().plusDays(1).plusMonths(1).plusWeeks(i));
     }
-
-    private boolean isDateParsable(String dateString) {
-        try {
-            parseDate(dateString);
-        } catch (Exception e) {
-            return false;
-        }
-        return true;
-    }
-
-    private LocalDate parseDate(String dateString) {
-        return LocalDate.parse((dateString.toLowerCase() + LocalDate.now().getYear()).substring(dateString.indexOf(" ") + 1), FORMATTER);
-    }
-
-    void waitUntilElementIsReady(WebDriver driver, WebElement by) {
-        new WebDriverWait(driver, 30)
-                .until(ExpectedConditions.elementToBeClickable(by));
-    }
-
-    void waitUntilTextIsPresent(WebDriver driver, WebElement webElement) {
-        try {
-            new WebDriverWait(driver, 3)
-                    .until((webDriver -> isNotBlank(webElement.getText())));
-        } catch (TimeoutException e) {
-
-        }
-    }
-
-    private void waitUntilPriceAppear(WebDriver driver, WebElement webElement) {
-        try {
-            new WebDriverWait(driver, 3)
-                    .until((webDriver -> webElement.getText()));
-        } catch (TimeoutException e) {
-
-        }
-    }
-
 }

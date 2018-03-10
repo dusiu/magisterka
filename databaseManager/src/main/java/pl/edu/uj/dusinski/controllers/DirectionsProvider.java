@@ -26,7 +26,7 @@ public class DirectionsProvider {
         this.directionRepository = directionRepository;
     }
 
-    @RequestMapping("/allDirections/{airline}")
+    @RequestMapping(value = "/allDirections/{airline}", produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String getAllDirectionFor(@PathVariable("airline") Airline airline) {
         List<Direction> directions = directionRepository.findAllByAirline(airline);

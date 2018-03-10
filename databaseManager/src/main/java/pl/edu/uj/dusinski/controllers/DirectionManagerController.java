@@ -31,7 +31,7 @@ public class DirectionManagerController {
         this.directionUpdaterService = directionUpdaterService;
     }
 
-    @RequestMapping(value = "/lastUpdatedTimeRyanair", produces = "application/json")
+    @RequestMapping(value = "/lastUpdatedTimeRyanair", produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String directionLatUpdatedTimeRyanair() {
         Log.info("Received last updated time request");
@@ -42,7 +42,7 @@ public class DirectionManagerController {
         return topById.get().toString();
     }
 
-    @RequestMapping(value = "/lastUpdatedTimeWizzair", produces = "application/json")
+    @RequestMapping(value = "/lastUpdatedTimeWizzair", produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String directionLatUpdatedTimeWizzair() {
         Log.info("Received last updated time request");

@@ -87,7 +87,7 @@ public class FlightDetailsData {
         }
     }
 
-    private static class AirportData {
+    public static class AirportData {
         private final String iataCode;
 
         private AirportData(String iataCode) {

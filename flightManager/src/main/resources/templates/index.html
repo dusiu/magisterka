@@ -23,7 +23,6 @@
                 <th>Name</th>
                 <th>Full Name</th>
                 <th>Code</th>
-                <th>Airline</th>
                 <th>Link</th>
             </tr>
             </thead>
@@ -32,7 +31,6 @@
                 <td th:text="${airport.name}"></td>
                 <td th:text="${airport.fullName}"></td>
                 <td th:text="${airport.code}"></td>
-                <td th:text="${airport.airline}"></td>
                 <td>
                     <a th:href="'/flyFrom/'+${airport.id}">Click</a>
                 </td>

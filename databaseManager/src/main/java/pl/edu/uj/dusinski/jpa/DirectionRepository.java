@@ -12,6 +12,6 @@ public interface DirectionRepository extends MongoRepository<Direction, String> 
 
     List<Direction> findByFromCode(String fromCode);
 
-    Direction findByFromCodeAndToCode(String fromCode, String toCode);
+    List<Direction> findByFromCodeAndToCode(String fromCode, String toCode);
 
 }

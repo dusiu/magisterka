@@ -1,10 +1,5 @@
 package pl.edu.uj.dusinski.services;
 
-import com.google.gson.Gson;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.support.ui.ExpectedCondition;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,13 +8,11 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
-import pl.edu.uj.dusinski.FlightDetailsData;
 import pl.edu.uj.dusinski.JmsPublisher;
 import pl.edu.uj.dusinski.WebDriverMangerService;
 import pl.edu.uj.dusinski.dao.Airline;
 import pl.edu.uj.dusinski.dao.Direction;
 
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -34,8 +27,6 @@ import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
 @EnableScheduling
 public class FlightsDetailsFinderService {
     private static final Logger Log = LoggerFactory.getLogger(FlightsDetailsFinderService.class);
-    private static final String WIZZAIR_FLIGHTS_URL = "https://wizzair.com/en-gb#/booking/select-flight/%s/%s/%s";
-    private static final String RYANAIR_FLIGHTS_URL = "https://www.ryanair.com/pl/pl/booking/home/%s/%s/%s";
 
     private final DirectionsProviderService directionsProviderService;
     private final WebDriverMangerService webDriverMangerService;
@@ -45,8 +36,7 @@ public class FlightsDetailsFinderService {
     private static int submittedTask;
     private static AtomicInteger doneTask = new AtomicInteger(0);
     private final RestTemplate restTemplate;
-    private final String url = "https://api.ryanair.com/farefinder/3/oneWayFares?&departureAirportIataCode=BCN&outboundDepartureDateFrom=2018-10-11&outboundDepartureDateTo=2018-10-28";
-    private final Gson gson = new Gson();
+    private final int halfADayInMs = 12 * 60 * 60 * 1000;
 
     @Autowired
     public FlightsDetailsFinderService(DirectionsProviderService directionsProviderService,
@@ -62,27 +52,24 @@ public class FlightsDetailsFinderService {
         this.restTemplate = restTemplate;
     }
 
-    @Scheduled(fixedDelay = 10_000)
+    @Scheduled(fixedDelay = halfADayInMs)
     public void findDirectionsDetails() {
         findAllFlights(RYANAIR, WIZZAIR);
+//        findAllFlights(WIZZAIR);
     }
 
     private void findAllFlights(Airline... airlines) {
-
-        FlightDetailsData flightDetailsData = gson.fromJson(restTemplate.getForObject(url, String.class), FlightDetailsData.class);
-
         List<Callable<Void>> tasks = new ArrayList<>();
         for (Airline airline : airlines) {
             List<Direction> directions = directionsProviderService.getDirectionsFor(airline);
             Log.info("Adding {} {} directions to check", directions.size(), airline);
-//        directions = directions.subList(376, directions.size());
+//        directions = directions.subList(424, directions.size());
             for (Direction direction : directions) {
-//                tasks.add(createFindFlightTask(direction, airline));
+                tasks.add(createFindFlightTask(direction, airline));
             }
         }
         submittedTask = tasks.size();
         doneTask.set(0);
-//        doneTask.set(376);
         try {
             executorService.invokeAll(tasks);
         } catch (InterruptedException e) {
@@ -90,25 +77,15 @@ public class FlightsDetailsFinderService {
         }
     }
 
-    private FindFlightsTask createFindFlightTask(Direction direction, Airline airline) {
+    private Callable<Void> createFindFlightTask(Direction direction, Airline airline) {
         if (WIZZAIR.equals(airline)) {
-            return new FindFlightsTaskWizziar(webDriverMangerService, prepareUrl(direction, airline), jmsPublisher, direction, daysToCheck);
+            return new FindFlightsTaskWizzair(webDriverMangerService, jmsPublisher, direction, daysToCheck);
         }
-        return new FindFlightsTaskRyanair(webDriverMangerService, prepareUrl(direction, airline), jmsPublisher, direction, daysToCheck);
+        return new FindFlightsTaskRyanair(restTemplate, jmsPublisher, direction, daysToCheck, directionsProviderService);
     }
 
     static void logTaskFinished() {
         Log.info("{}/{} directions are checked", doneTask.incrementAndGet(), submittedTask);
-    }
-
-    private String prepareUrl(Direction direction, Airline airline) {
-        String url = WIZZAIR.equals(airline) ? WIZZAIR_FLIGHTS_URL : RYANAIR_FLIGHTS_URL;
-        return String.format(url, direction.getFromCode(), direction.getToCode(), LocalDate.now().plusDays(1).toString());
-    }
-
-    public static void waitForWebsite(WebDriver webDriver) {
-        new WebDriverWait(webDriver, 30).until((ExpectedCondition<Boolean>) wd ->
-                ((JavascriptExecutor) wd).executeScript("return document.readyState").equals("complete"));
     }
 
 }

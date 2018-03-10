@@ -12,6 +12,6 @@ public interface FlightDetailsRepository extends MongoRepository<FlightDetails, 
 
     List<FlightDetails> findByDirectionIn(List<Direction> directions);
 
-    Optional<FlightDetails> findTopByDirectionAndFlyDateBetweenOrderByOriginalPrice(Direction direction, LocalDate start, LocalDate end);
+    Optional<FlightDetails> findTopByDirectionInAndFlyDateBetweenOrderByOriginalPrice(List<Direction> direction, LocalDate start, LocalDate end);
 
 }

@@ -13,6 +13,7 @@ import pl.edu.uj.dusinski.dao.Direction;
 
 import javax.annotation.PostConstruct;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static pl.edu.uj.dusinski.dao.Airline.RYANAIR;
 import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
@@ -27,6 +28,7 @@ public class DirectionsProviderService {
     private final String directionUrl = "/directions/allDirections/";
     private final Map<Airline, List<Direction>> airlineDirections = new HashMap<>();
     private final long oneDayInMs = 24 * 60 * 60 * 1000;
+    private final Map<String, Direction> ryanairDirectionMap = new HashMap<>();
 
     @Autowired
     public DirectionsProviderService(RestTemplate restTemplate, @Value("${database.manager.url}") String databaseManagerUrl) {
@@ -35,7 +37,16 @@ public class DirectionsProviderService {
     }
 
     public List<Direction> getDirectionsFor(Airline airline) {
+        if (RYANAIR.equals(airline)) {
+            return new ArrayList<>(airlineDirections.get(airline).stream()
+                    .collect(Collectors.toMap(Direction::getFromCode, v -> v, (v1, v2) -> v1))
+                    .values());
+        }
         return airlineDirections.getOrDefault(airline, Collections.emptyList());
+    }
+
+    public Direction getFirectionForRyanair(String codeFrom, String codeTo) {
+        return ryanairDirectionMap.get(codeFrom + codeTo);
     }
 
     @Scheduled(fixedDelay = oneDayInMs, initialDelay = oneDayInMs)
@@ -55,6 +66,10 @@ public class DirectionsProviderService {
         try {
             List<Direction> directions = Arrays.asList(restTemplate.getForObject(getUrlForAirline(airline), Direction[].class));
             airlineDirections.put(airline, directions);
+            if (RYANAIR.equals(airline)) {
+                ryanairDirectionMap.putAll(directions.stream()
+                        .collect(Collectors.toMap(k -> k.getFromCode() + k.getToCode(), v -> v)));
+            }
             Log.info("There are {} different directions for {}", directions.size(), airline);
         } catch (Exception e) {
             Log.error("Cannot get wizziar directions, turn on database manager!");

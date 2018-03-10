@@ -26,7 +26,7 @@ public class CurrencyRatioProviderService implements Function<String, Double> {
     private final String currencyApiUrl = "https://api.fixer.io/latest?base=PLN";
     private final String yahooCurrencyApiUrl = "https://finance.yahoo.com/webservice/v1/symbols/allcurrencies/quote?format=json";
     private final Gson gson = new Gson();
-    private final Set<String> missingCurrencies = Set.of("AED", "BAM", "GEL", "MDL", "MKD", "RSD", "UAH");
+    private final Set<String> missingCurrencies = Set.of("AED", "BAM", "GEL", "MDL", "MKD", "RSD", "UAH", "MAD");
     private final int oneDayInMs = 24 * 60 * 60 * 1000;
 
     @Autowired
@@ -51,6 +51,7 @@ public class CurrencyRatioProviderService implements Function<String, Double> {
 
         currencyRatio.putAll(getMissingCurrenciesWithPlnRatio(gson.fromJson(
                 restTemplate.getForObject(yahooCurrencyApiUrl, String.class), YahooCurrency.class)));
+        Log.info("Updated {} currencies", currencyRatio.size());
     }
 
     private Map<String, Double> getMissingCurrenciesWithPlnRatio(YahooCurrency yahooCurrency) {

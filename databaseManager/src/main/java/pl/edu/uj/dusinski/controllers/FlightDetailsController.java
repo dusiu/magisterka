@@ -13,7 +13,6 @@ import pl.edu.uj.dusinski.jpa.DirectionRepository;
 import pl.edu.uj.dusinski.jpa.FlightDetailsRepository;
 
 import java.time.LocalDate;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -41,21 +40,19 @@ public class FlightDetailsController {
         this.directionRepository = directionRepository;
     }
 
-    @RequestMapping("/flyFrom")
+    @RequestMapping(value = "/flyFrom", produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String findWhereFromCanFly() {
         Log.info("Returning fly from directions");
-        List<FlightDetails> flightDetails = flightDetailsRepository.findAll();
         return gson.toJson(
-                flightDetails
-                        .stream()
-                        .map(v -> airportDetailsRepository.findByCode(v.getDirection().getFromCode()))
-                        .filter(Objects::nonNull)
+                flightDetailsRepository.findByDirectionIn(directionRepository.findAll()).stream()
+                        .map(v -> v.getDirection().getFromCode())
                         .distinct()
+                        .map(v -> airportDetailsRepository.findByCode(v).get(0))
                         .collect(Collectors.toList()));
     }
 
-    @RequestMapping("/getDirections/{direction}")
+    @RequestMapping(value = "/getDirections/{direction}", produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String findDirectionsToFly(@PathVariable("direction") String direction) {
         List<FlightDetails> flightDetails = flightDetailsRepository.findAll();
@@ -63,14 +60,13 @@ public class FlightDetailsController {
         return gson.toJson(
                 flightDetails
                         .stream()
-                        .filter(v -> v.getDirection().getFromCode().equals(direction))
-                        .map(v -> airportDetailsRepository.findByCode(v.getDirection().getToCode()))
-                        .filter(Objects::nonNull)
+                        .filter(v -> v.getDirection() != null && v.getDirection().getFromCode().equals(direction))
+                        .map(FlightDetails::getDirection)
                         .distinct()
                         .collect(Collectors.toList()));
     }
 
-    @RequestMapping("/getAllAirports")
+    @RequestMapping(value = "/getAllAirports", produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String getAirportDetails() {
         List<AirportDetails> airports = airportDetailsRepository.findAll();
@@ -86,8 +82,7 @@ public class FlightDetailsController {
         if (anyway.equals(request.getToCode())) {
             directions = directionRepository.findByFromCode(request.getFromCode());
         } else {
-            directions = Collections.singletonList(directionRepository
-                    .findByFromCodeAndToCode(request.getFromCode(), request.getToCode()));
+            directions = directionRepository.findByFromCodeAndToCode(request.getFromCode(), request.getToCode());
         }
 
         List<FlightDetails> flightDetails = flightDetailsRepository.findByDirectionIn(directions);
@@ -98,7 +93,7 @@ public class FlightDetailsController {
         List<FlightDetailsBothWay> bothWayFlightsMap = flightDetails.stream()
                 .sorted(Comparator.comparingDouble(FlightDetails::getOriginalPrice))
                 .limit(100)
-                .map(v -> flightDetailsRepository.findTopByDirectionAndFlyDateBetweenOrderByOriginalPrice(
+                .map(v -> flightDetailsRepository.findTopByDirectionInAndFlyDateBetweenOrderByOriginalPrice(
                         findOppositeDirection(v), prepareStartDate(v, request), prepareEndDate(v, request))
                         .map(toFlight -> new FlightDetailsBothWay(v, toFlight)).orElse(null))
                 .filter(Objects::nonNull)
@@ -116,10 +111,9 @@ public class FlightDetailsController {
         return v.getFlyDate().plusDays(request.getMaxDaysToStay());
     }
 
-    private Direction findOppositeDirection(FlightDetails flightDetails) {
-        Direction byFromCodeAndToCode = directionRepository.findByFromCodeAndToCode(flightDetails.getDirection().getToCode(),
+    private List<Direction> findOppositeDirection(FlightDetails flightDetails) {
+        return directionRepository.findByFromCodeAndToCode(flightDetails.getDirection().getToCode(),
                 flightDetails.getDirection().getFromCode());
-        return byFromCodeAndToCode;
     }
 
 

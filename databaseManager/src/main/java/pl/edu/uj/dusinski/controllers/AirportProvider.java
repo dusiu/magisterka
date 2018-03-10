@@ -25,7 +25,7 @@ public class AirportProvider {
     }
 
 
-    @RequestMapping("/allairports")
+    @RequestMapping(value = "/allairports", produces = "application/json;charset=UTF-8")
     @ResponseBody
     public String findAllReports() {
         List<AirportDetails> allAirports = airportDetailsRepository.findAll();
