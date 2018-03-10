@@ -14,6 +14,9 @@ import pl.edu.uj.dusinski.dao.Direction;
 import javax.annotation.PostConstruct;
 import java.util.*;
 
+import static pl.edu.uj.dusinski.dao.Airline.RYANAIR;
+import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
+
 @Service
 @EnableScheduling
 public class DirectionsProviderService {
@@ -42,13 +45,24 @@ public class DirectionsProviderService {
 
     @PostConstruct
     public void updateDirections() {
-        Log.info("Updating directions list for Wizzair");
+        updateDirections(WIZZAIR);
+        updateDirections(RYANAIR);
+    }
+
+
+    private void updateDirections(Airline airline) {
+        Log.info("Updating directions list for {}", airline);
         try {
-            List<Direction> wizzairDirections = Arrays.asList(restTemplate.getForObject(getUrlForAirline(Airline.WIZZAIR), Direction[].class));
-            airlineDirections.put(Airline.WIZZAIR, wizzairDirections);
-            Log.info("There are {} different directions for Wizzair", wizzairDirections.size());
+            List<Direction> directions = Arrays.asList(restTemplate.getForObject(getUrlForAirline(airline), Direction[].class));
+            airlineDirections.put(airline, directions);
+            Log.info("There are {} different directions for {}", directions.size(), airline);
         } catch (Exception e) {
             Log.error("Cannot get wizziar directions, turn on database manager!");
+            try {
+                Thread.sleep(10_000);
+            } catch (InterruptedException e1) {
+            }
+            updateDirections();
         }
     }
 
