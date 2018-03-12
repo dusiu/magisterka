@@ -20,7 +20,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static pl.edu.uj.dusinski.dao.Airline.RYANAIR;
 import static pl.edu.uj.dusinski.dao.Airline.WIZZAIR;
 
 @Service
@@ -58,8 +57,8 @@ public class FlightsDetailsFinderService {
 
     @Scheduled(fixedDelay = halfADayInMs)
     public void findDirectionsDetails() {
-        findAllFlights(RYANAIR, WIZZAIR);
-//        findAllFlights(WIZZAIR);
+//        findAllFlights(RYANAIR, WIZZAIR);
+        findAllFlights(WIZZAIR);
     }
 
     private void findAllFlights(Airline... airlines) {
@@ -67,7 +66,7 @@ public class FlightsDetailsFinderService {
         for (Airline airline : airlines) {
             List<Direction> directions = directionsProviderService.getDirectionsFor(airline);
             Log.info("Adding {} {} directions to check", directions.size(), airline);
-//        directions = directions.subList(424, directions.size());
+        directions = directions.subList(424 + 44, directions.size());
             for (Direction direction : directions) {
                 tasks.add(createFindFlightTask(direction, airline));
             }

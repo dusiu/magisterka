@@ -102,11 +102,11 @@ public class FlightDetailsController {
     }
 
     private LocalDate prepareStartDate(FlightDetails v, FlightDetailsRequest request) {
-        return v.getFlyDate().plusDays(request.getMinDaysToStay());
+        return v.getFlyDate().plusDays(request.getMinDaysToStay() - 1);
     }
 
     private LocalDate prepareEndDate(FlightDetails v, FlightDetailsRequest request) {
-        return v.getFlyDate().plusDays(request.getMaxDaysToStay());
+        return v.getFlyDate().plusDays(request.getMaxDaysToStay() + 1);
     }
 
     private List<Direction> findOppositeDirection(FlightDetails flightDetails) {

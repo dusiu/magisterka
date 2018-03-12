@@ -43,7 +43,7 @@
                         <td th:text="${flight.from.direction.airline}"></td>
                         <td th:text="${flight.from.flyDate}"></td>
                         <td th:text="${#temporals.dayOfWeekName(flight.from.flyDate)}"></td>
-                        <td th:text="${flight.from.originalPrice+' '+flight.from.currency}"></td>
+                        <td th:text="${#numbers.formatDecimal(flight.to.originalPrice,0,2)+' '+flight.to.currency}"></td>
                         <td th:text="${#numbers.formatDecimal(flight.from.plnPrice,0,2)+' PLN'}"></td>
                         <td></td>
                         <td><a target="_blank" th:href="@{${flight.from.flightUrl}}">Click</a>
@@ -55,7 +55,7 @@
                         <td th:text="${flight.to.direction.airline}"></td>
                         <td th:text="${flight.to.flyDate}"></td>
                         <td th:text="${#temporals.dayOfWeekName(flight.to.flyDate)}"></td>
-                        <td th:text="${flight.to.originalPrice+' '+flight.to.currency}"></td>
+                        <td th:text="${#numbers.formatDecimal(flight.to.originalPrice,0,2)+' '+flight.to.currency}"></td>
                         <td th:text="${#numbers.formatDecimal(flight.to.plnPrice,0,2)+' PLN'}"></td>
                         <td th:text="${#numbers.formatDecimal(flight.totalPlnPrice,0,2)+' PLN'}"></td>
                         <td><a target="_blank" th:href="@{${flight.to.flightUrl}}">Click</a>
