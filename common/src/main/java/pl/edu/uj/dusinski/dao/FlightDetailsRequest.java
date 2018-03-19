@@ -13,7 +13,11 @@ public class FlightDetailsRequest {
     private int maxDaysToStay;
     private boolean bothWay;
 
-    public FlightDetailsRequest() {
+    private FlightDetailsRequest() {
+    }
+
+    public static FlightDetailsRequest createNewInstance() {
+        return new FlightDetailsRequest();
     }
 
     @JsonCreator

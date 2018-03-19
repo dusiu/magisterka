@@ -8,6 +8,9 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 public class DirectionsUtils {
     private static final int WAIT_TIMEOUT = 30;
 
+    private DirectionsUtils() {
+    }
+
     public static void waitUntilElementIsReady(WebDriver driver, By by) {
         new WebDriverWait(driver, WAIT_TIMEOUT)
                 .until(ExpectedConditions.elementToBeClickable(by));

@@ -47,7 +47,7 @@ public class FlightsController {
             flightsForDirection.add(0, takeMeAnyway);
             model.addAttribute("directions", flightsForDirection);
             model.addAttribute("currentAirport", currentAirport);
-            model.addAttribute("request", new FlightDetailsRequest());
+            model.addAttribute("request", FlightDetailsRequest.createNewInstance());
         }
         return "flightDetails";
     }

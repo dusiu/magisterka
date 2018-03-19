@@ -6,6 +6,9 @@ import static java.util.Map.entry;
 
 public class CurrencyResolverUtils {
 
+    private CurrencyResolverUtils() {
+    }
+
     private final static Map<String, String> SYMBOL_CURRENCY_MAP = Map.ofEntries(
             entry("Dhs", "AED"),//dwc/sof
             entry("KM", "BAM"),//sjj/bud

@@ -85,7 +85,7 @@ public class FlightDetailsData {
         }
 
         public LocalDate getDepartureDate() {
-            return LocalDate.parse(departureDate.substring(0, departureDate.indexOf("T")));
+            return LocalDate.parse(departureDate.substring(0, departureDate.indexOf('T')));
         }
     }
 

@@ -13,6 +13,7 @@ import pl.edu.uj.dusinski.dao.FlightDetails;
 
 import java.time.LocalDate;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicReference;
 
 import static pl.edu.uj.dusinski.CurrencyResolverUtils.resolveCurrencyFromSymbol;
 import static pl.edu.uj.dusinski.services.FlightsDetailsFinderService.logTaskFinished;
@@ -44,9 +45,14 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
 
     @Override
     public Void call() {
-        WebDriver webDriver = webDriverMangerService.getFreeWebDriver();
+        AtomicReference<WebDriver> webDriver = new AtomicReference<>();
+        try {
+            webDriver.set(webDriverMangerService.getFreeWebDriver());
+        } catch (InterruptedException e) {
+            Log.error("Error during getting webdriver", e);
+        }
         Log.info("Checking url {}", url);
-        Thread t = new Thread(() -> findFlightDetails(webDriver), Thread.currentThread().getName());
+        Thread t = new Thread(() -> findFlightDetails(webDriver.get()), Thread.currentThread().getName());
         t.start();
         try {
             t.join(taskTimeout);
@@ -56,7 +62,7 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
             Log.error("Timeout on loading page " + url);
             t.interrupt();
         }
-        webDriverMangerService.returnWebDriver(webDriver);
+        webDriverMangerService.returnWebDriver(webDriver.get());
         logTaskFinished();
         return null;
     }
