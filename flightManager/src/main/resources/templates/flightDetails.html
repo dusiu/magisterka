@@ -22,7 +22,7 @@
         <center><h2 th:text="${error}"></h2></center>
     </div>
 
-    <div class="col-sm-12" th:if="${error==null}">
+    <div class="row" th:if="${error==null}">
         <form th:action="@{/flyTo}" th:object="${request}" method="post">
             <table class="table">
                 <thead>
@@ -65,14 +65,20 @@
                         <button type="submit" class="btn btn-info">Submit</button>
                     </td>
                 </tr>
+                <tr>
+                    <td>
+                        <a class="btn btn-default" th:href="@{/}">Go Back</a>
+                    </td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
                 </tbody>
             </table>
         </form>
     </div>
-    <form th:action="@{/}">
-        <input class="btn btn-default" type="submit" value="Go Back"/>
-    </form>
-    <br/>
 </div>
 
 
