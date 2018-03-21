@@ -36,8 +36,8 @@ public class FlightDataChooserService {
         if (flightDetailsRequest.isBothWay()) {
             List<FlightDetailsBothWay> bothWaysFlightDetails = flightDataProviderService.getBothWaysFlightDetails(flightDetailsRequest);
             return bothWaysFlightDetails.stream()
-                    .map(v -> new EnrichedFlightDetailsGroup(flightEnricher.apply(v.getFrom()), flightEnricher.apply(v.getTo())))
-                    .sorted(Comparator.comparingDouble(EnrichedFlightDetailsGroup::getTotalPlnPrice))
+                    .map(v -> new EnrichedFlightDetailsPair(flightEnricher.apply(v.getFrom()), flightEnricher.apply(v.getTo())))
+                    .sorted(Comparator.comparingDouble(EnrichedFlightDetailsPair::getTotalPlnPrice))
                     .limit(maxShownFlight)
                     .collect(Collectors.toList());
         } else {

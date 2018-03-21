@@ -49,9 +49,23 @@ public class CurrencyRatioProviderService implements Function<String, Double> {
                 .stream()
                 .collect(Collectors.toMap(Map.Entry::getKey, v -> 1 / v.getValue())));
 
-        currencyRatio.putAll(getMissingCurrenciesWithPlnRatio(gson.fromJson(
-                restTemplate.getForObject(yahooCurrencyApiUrl, String.class), YahooCurrency.class)));
+        getYahooCurrencies();
         Log.info("Updated {} currencies", currencyRatio.size());
+    }
+
+    private void getYahooCurrencies() {
+        try {
+            YahooCurrency yahooCurrency = gson.fromJson(
+                    restTemplate.getForObject(yahooCurrencyApiUrl, String.class), YahooCurrency.class);
+            currencyRatio.putAll(getMissingCurrenciesWithPlnRatio(yahooCurrency));
+        } catch (Exception e) {
+            Log.error("Error during getting yahoo currencies, will try again in 10s", e);
+            try {
+                Thread.sleep(10_000);
+            } catch (InterruptedException e1) {
+            }
+            getYahooCurrencies();
+        }
     }
 
     private Map<String, Double> getMissingCurrenciesWithPlnRatio(YahooCurrency yahooCurrency) {

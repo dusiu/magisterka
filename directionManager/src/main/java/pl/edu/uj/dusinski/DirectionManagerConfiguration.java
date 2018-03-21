@@ -8,7 +8,7 @@ import org.springframework.context.annotation.Configuration;
 public class DirectionManagerConfiguration {
 
     @Value("${web.driver.instances}")
-    int webDriverInstances;
+    private int webDriverInstances;
 
     @Bean
     public WebDriverMangerService webDriverMangerService() {

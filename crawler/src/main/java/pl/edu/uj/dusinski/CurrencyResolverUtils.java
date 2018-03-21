@@ -10,23 +10,23 @@ public class CurrencyResolverUtils {
     }
 
     private final static Map<String, String> SYMBOL_CURRENCY_MAP = Map.ofEntries(
-            entry("Dhs", "AED"),//dwc/sof
-            entry("KM", "BAM"),//sjj/bud
-            entry("lv", "BGN"),//boj/bud
-            entry("CHF", "CHF"),//bsl/osi
-            entry("Kč", "CZK"),//prg/ltn
-            entry("€", "EUR"),//vie/tzl
-            entry("£", "GBP"),//ltn/boj
-            entry("GEL", "GEL"),//kut/ltn
-            entry("kn", "HRK"),//osi/bsl
-            entry("Ft", "HUF"),//bud/gyd
-            entry("₪", "ILS"),//tln/vie
-            entry("MDL", "MDL"),//kiv/ath
-            entry("MKD", "MKD"),//skp/crl
-            entry("zł", "PLN"),//ktw/ltn
-            entry("lei", "RON"),//otp/crl
-            entry("din", "RSD"),//beg/dtm
-            entry("UAH", "UAH"),//lwq/ltn
+            entry("Dhs", "AED"),
+            entry("KM", "BAM"),
+            entry("lv", "BGN"),
+            entry("CHF", "CHF"),
+            entry("Kč", "CZK"),
+            entry("€", "EUR"),
+            entry("£", "GBP"),
+            entry("GEL", "GEL"),
+            entry("kn", "HRK"),
+            entry("Ft", "HUF"),
+            entry("₪", "ILS"),
+            entry("MDL", "MDL"),
+            entry("MKD", "MKD"),
+            entry("zł", "PLN"),
+            entry("lei", "RON"),
+            entry("din", "RSD"),
+            entry("UAH", "UAH"),
             entry("$", "USD"));
 
     private final static Map<String, String> FROM_CODE_CURRENCY_MAP = Map.ofEntries(

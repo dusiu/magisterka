@@ -31,22 +31,11 @@ public class DirectionManagerController {
         this.directionUpdaterService = directionUpdaterService;
     }
 
-    @RequestMapping(value = "/lastUpdatedTimeRyanair", produces = "application/json;charset=UTF-8")
+    @RequestMapping(value = "/lastUpdatedTime/{airline}", produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public String directionLatUpdatedTimeRyanair() {
+    public String directionLatUpdatedTime(@PathVariable("airline")Airline airline) {
         Log.info("Received last updated time request");
-        Optional<DirectionRefreshDetails> topById = refreshDetailsRepository.findTopByAirlineOrderByIdDesc(Airline.RYANAIR);
-        if (!topById.isPresent()) {
-            return emptyDirectionRefreshDetails.toString();
-        }
-        return topById.get().toString();
-    }
-
-    @RequestMapping(value = "/lastUpdatedTimeWizzair", produces = "application/json;charset=UTF-8")
-    @ResponseBody
-    public String directionLatUpdatedTimeWizzair() {
-        Log.info("Received last updated time request");
-        Optional<DirectionRefreshDetails> topById = refreshDetailsRepository.findTopByAirlineOrderByIdDesc(Airline.WIZZAIR);
+        Optional<DirectionRefreshDetails> topById = refreshDetailsRepository.findTopByAirlineOrderByIdDesc(airline);
         if (!topById.isPresent()) {
             return emptyDirectionRefreshDetails.toString();
         }

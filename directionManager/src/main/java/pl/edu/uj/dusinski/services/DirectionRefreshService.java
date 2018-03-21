@@ -7,6 +7,7 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import pl.edu.uj.dusinski.dao.Airline;
 import pl.edu.uj.dusinski.dao.DirectionRefreshDetails;
 
 import java.time.LocalDateTime;
@@ -34,29 +35,26 @@ public class DirectionRefreshService {
     @Scheduled(fixedDelay = 24 * 60 * 1000)
     public void updateDirectionIfNeeded() {
         Log.info("Checking if we want to update directions");
-        checkWizzairDirections();
-        checkRyanairDirections();
+        checkDirections(Airline.RYANAIR);
+        checkDirections(Airline.WIZZAIR);
     }
 
-    private void checkRyanairDirections() {
-        DirectionRefreshDetails latest = restTemplate
-                .getForObject(databaseManagerUrl + "/directionManager/lastUpdatedTimeRyanair", DirectionRefreshDetails.class);
-
-        if (latest != null && LocalDateTime.now().minusWeeks(1).isAfter(latest.getUpdatingTime())) {
-            if (ryanairDirectionFinderService.updateDirections()) {
-                restTemplate.getForObject(databaseManagerUrl + "/directionManager/updateNewDirections/RYANAIR", String.class);
+    private void checkDirections(Airline airline) {
+        try {
+            DirectionRefreshDetails latest = restTemplate
+                    .getForObject(databaseManagerUrl + "/directionManager/lastUpdatedTime/" + airline.name(), DirectionRefreshDetails.class);
+            if (latest != null && LocalDateTime.now().minusWeeks(1).isAfter(latest.getUpdatingTime())) {
+                if (wizzairDirectionFinderService.updateDirections()) {
+                    restTemplate.getForObject(databaseManagerUrl + "/directionManager/updateNewDirections/WIZZAIR", String.class);
+                }
             }
-        }
-    }
-
-    private void checkWizzairDirections() {
-        DirectionRefreshDetails latest = restTemplate
-                .getForObject(databaseManagerUrl + "/directionManager/lastUpdatedTimeWizzair", DirectionRefreshDetails.class);
-
-        if (latest != null && LocalDateTime.now().minusWeeks(1).isAfter(latest.getUpdatingTime())) {
-            if (wizzairDirectionFinderService.updateDirections()) {
-                restTemplate.getForObject(databaseManagerUrl + "/directionManager/updateNewDirections/WIZZAIR", String.class);
+        } catch (Exception e) {
+            Log.error("Error during checking directions probably direction manager is not running, retrying in 10s", e);
+            try {
+                Thread.sleep(10_000);
+            } catch (InterruptedException e1) {
             }
+            checkDirections(airline);
         }
     }
 }

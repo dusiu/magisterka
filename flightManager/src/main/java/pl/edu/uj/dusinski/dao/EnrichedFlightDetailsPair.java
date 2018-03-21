@@ -1,12 +1,12 @@
 package pl.edu.uj.dusinski.dao;
 
-public class EnrichedFlightDetailsGroup {
+public class EnrichedFlightDetailsPair {
     private final EnrichedFlightDetails from;
     private final EnrichedFlightDetails to;
     private final double totalPlnPrice;
 
-    public EnrichedFlightDetailsGroup(EnrichedFlightDetails from,
-                                      EnrichedFlightDetails to) {
+    public EnrichedFlightDetailsPair(EnrichedFlightDetails from,
+                                     EnrichedFlightDetails to) {
         this.from = from;
         this.to = to;
         this.totalPlnPrice = from.getPlnPrice() + to.getPlnPrice();

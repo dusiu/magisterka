@@ -46,7 +46,7 @@ public class DirectionsProviderService {
         return airlineDirections.getOrDefault(airline, Collections.emptyList());
     }
 
-    public Direction getFirectionForRyanair(String codeFrom, String codeTo) {
+    public Direction getDirectionForRyanair(String codeFrom, String codeTo) {
         return ryanairDirectionMap.get(codeFrom + codeTo);
     }
 

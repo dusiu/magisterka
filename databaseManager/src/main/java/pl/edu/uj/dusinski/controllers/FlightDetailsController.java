@@ -7,7 +7,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
-import pl.edu.uj.dusinski.dao.*;
+import pl.edu.uj.dusinski.dao.Direction;
+import pl.edu.uj.dusinski.dao.FlightDetails;
+import pl.edu.uj.dusinski.dao.FlightDetailsBothWay;
+import pl.edu.uj.dusinski.dao.FlightDetailsRequest;
 import pl.edu.uj.dusinski.jpa.AirportDetailsRepository;
 import pl.edu.uj.dusinski.jpa.DirectionRepository;
 import pl.edu.uj.dusinski.jpa.FlightDetailsRepository;
@@ -62,14 +65,6 @@ public class FlightDetailsController {
                         .map(FlightDetails::getDirection)
                         .distinct()
                         .collect(Collectors.toList()));
-    }
-
-    @RequestMapping(value = "/getAllAirports", produces = "application/json;charset=UTF-8")
-    @ResponseBody
-    public String getAirportDetails() {
-        List<AirportDetails> airports = airportDetailsRepository.findAll();
-        Log.info("Returning all airport details");
-        return gson.toJson(airports.stream().filter(Objects::nonNull).distinct().collect(Collectors.toList()));
     }
 
     @RequestMapping(value = "/flightDetails", method = RequestMethod.POST, consumes = MediaType.APPLICATION_JSON_VALUE)

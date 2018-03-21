@@ -6,10 +6,10 @@ import org.springframework.jms.annotation.EnableJms;
 
 @SpringBootApplication
 @EnableJms
-public class ApplicationMain {
+public class DirectionManagerApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(ApplicationMain.class);
+        SpringApplication.run(DirectionManagerApplication.class);
     }
 
 }

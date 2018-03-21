@@ -32,7 +32,7 @@ public class FlightDataProviderService {
     private final String databaseManagerUrl;
     private final String flyFromUrl = "/flights/flyFrom";
     private final String flyGetDirectionsUrl = "/flights/getDirections/";
-    private final String airportsUrl = "/flights/getAllAirports";
+    private final String airportsUrl = "/airports/getAllAirports";
     private final String flightsDetailsUrl = "/flights/flightDetails";
     private final Gson gson = new Gson();
     private final Type flightDetailsType = new TypeToken<Set<FlightDetails>>() {

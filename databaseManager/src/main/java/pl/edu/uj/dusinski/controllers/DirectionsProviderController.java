@@ -16,13 +16,13 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/directions")
-public class DirectionsProvider {
-    private static final Logger Log = LoggerFactory.getLogger(DirectionsProvider.class);
+public class DirectionsProviderController {
+    private static final Logger Log = LoggerFactory.getLogger(DirectionsProviderController.class);
 
     private final DirectionRepository directionRepository;
     private final Gson gson = new Gson();
 
-    public DirectionsProvider(DirectionRepository directionRepository) {
+    public DirectionsProviderController(DirectionRepository directionRepository) {
         this.directionRepository = directionRepository;
     }
 

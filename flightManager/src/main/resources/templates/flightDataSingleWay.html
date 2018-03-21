@@ -18,7 +18,7 @@
     <h2>List of flights one way:</h2>
     <div class="row">
         <div th:if="${flightData.isEmpty()}">
-            <center><h2>No data</h2></center>
+            <center><h2>No data for given parameters</h2></center>
         </div>
         <div class="col-sm-12" th:if="${!flightData.isEmpty()}">
             <table class="table">
@@ -31,7 +31,7 @@
                     <th>Day of week</th>
                     <th>Original price</th>
                     <th>Converted Price</th>
-                    <th>Link</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -43,14 +43,18 @@
                     <td th:text="${#temporals.dayOfWeekName(flight.flyDate)}"></td>
                     <td th:text="${#numbers.formatDecimal(flight.originalPrice,0,2)+' '+flight.currency}"></td>
                     <td th:text="${#numbers.formatDecimal(flight.plnPrice,0,2)+' PLN'}"></td>
-                    <td><a target="_blank" th:href="@{${flight.flightUrl}}">Click</a>
+                    <td>
+                        <form style="height: 10px;" th:action="@{${flight.flightUrl}}" target="_blank">
+                            <input class="btn btn-info btn-sm" type="submit"  value="Buy"/>
+                        </form>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </div>
-        <a th:href="@{/}">Go Back</a>
-        <br/>
+        <form th:action="@{/}">
+            <input class="btn btn-default" type="submit" value="Go Back"/>
+        </form>        <br/>
     </div>
 </div>
 

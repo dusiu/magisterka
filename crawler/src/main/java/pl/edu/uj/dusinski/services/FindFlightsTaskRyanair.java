@@ -38,7 +38,7 @@ public class FindFlightsTaskRyanair implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws Exception {
+    public Void call() {
         int weeksToCheck = (int) Math.ceil(daysToCheck / 7.0);
         int publishedFlights = 0;
         for (int i = 0; i < weeksToCheck; i++) {
@@ -57,7 +57,7 @@ public class FindFlightsTaskRyanair implements Callable<Void> {
         String fromCode = v.getOutbound().getDepartureAirport().getIataCode();
         String toCode = v.getOutbound().getArrivalAirport().getIataCode();
         return new FlightDetails(fromCode + toCode + RYANAIR + v.getOutbound().getDepartureDate().toString(),
-                v.getOutbound().getDepartureDate(), directionsProviderService.getFirectionForRyanair(fromCode, toCode),
+                v.getOutbound().getDepartureDate(), directionsProviderService.getDirectionForRyanair(fromCode, toCode),
                 v.getSummary().getPrice().getValue(), v.getSummary().getPrice().getCurrencyCode());
     }
 

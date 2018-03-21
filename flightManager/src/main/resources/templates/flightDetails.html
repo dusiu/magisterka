@@ -61,14 +61,16 @@
                                id="maxDaysToStay" value="10" min="1" max="30">
                     </td>
                     <td>
-                        <button type="submit" class="btn btn-default">Submit</button>
+                        <button type="submit" class="btn btn-info">Submit</button>
                     </td>
                 </tr>
                 </tbody>
             </table>
         </form>
     </div>
-    <a th:href="@{/}">Go Back</a>
+    <form th:action="@{/}">
+        <input class="btn btn-default" type="submit" value="Go Back"/>
+    </form>
     <br/>
 </div>
 

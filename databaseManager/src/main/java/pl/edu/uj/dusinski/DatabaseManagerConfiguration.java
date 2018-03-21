@@ -12,13 +12,12 @@ import org.springframework.data.mongodb.core.SimpleMongoDbFactory;
 public class DatabaseManagerConfiguration {
 
     @Bean
-    public MongoDbFactory mongoDbFactory(@Value("${mongo.database.name}") String databaseName) {
-        return new SimpleMongoDbFactory(new MongoClient(), databaseName);
-    }
-
-    @Bean
     public MongoTemplate mongoTemplate(@Value("${mongo.database.name}") String databaseName) {
         return new MongoTemplate(mongoDbFactory(databaseName));
+    }
+
+    private MongoDbFactory mongoDbFactory(String databaseName) {
+        return new SimpleMongoDbFactory(new MongoClient(), databaseName);
     }
 
 }
