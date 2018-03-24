@@ -7,11 +7,14 @@ import org.springframework.stereotype.Service;
 import pl.edu.uj.dusinski.dao.FlightDetails;
 import pl.edu.uj.dusinski.jpa.FlightDetailsRepository;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 @Service
 public class FlightDetailsUpdaterService {
     private static final Logger Log = LoggerFactory.getLogger(FlightDetailsUpdaterService.class);
 
     private final FlightDetailsRepository flightDetailsRepository;
+    private final AtomicInteger atomicInteger = new AtomicInteger(0);
 
     @Autowired
     public FlightDetailsUpdaterService(FlightDetailsRepository flightDetailsRepository) {
@@ -19,7 +22,9 @@ public class FlightDetailsUpdaterService {
     }
 
     public void updateFlightDetails(FlightDetails flightDetails) {
-        Log.info("Adding new flight details with id:{}", flightDetails.getId());
+        if (atomicInteger.incrementAndGet() == 500) {
+            Log.info("Added 500 new flight details");
+        }
         flightDetailsRepository.save(flightDetails);
     }
 }

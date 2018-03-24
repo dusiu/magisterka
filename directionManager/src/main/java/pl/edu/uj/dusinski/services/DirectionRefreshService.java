@@ -44,8 +44,14 @@ public class DirectionRefreshService {
             DirectionRefreshDetails latest = restTemplate
                     .getForObject(databaseManagerUrl + "/directionManager/lastUpdatedTime/" + airline.name(), DirectionRefreshDetails.class);
             if (latest != null && LocalDateTime.now().minusWeeks(1).isAfter(latest.getUpdatingTime())) {
-                if (wizzairDirectionFinderService.updateDirections()) {
-                    restTemplate.getForObject(databaseManagerUrl + "/directionManager/updateNewDirections/WIZZAIR", String.class);
+                if (airline == Airline.WIZZAIR) {
+                    if (wizzairDirectionFinderService.updateDirections()) {
+                        sendUpdateFinishCall(airline);
+                    }
+                } else {
+                    if (ryanairDirectionFinderService.updateDirections()) {
+                        sendUpdateFinishCall(airline);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -56,5 +62,9 @@ public class DirectionRefreshService {
             }
             checkDirections(airline);
         }
+    }
+
+    private void sendUpdateFinishCall(Airline airline) {
+        restTemplate.getForObject(databaseManagerUrl + "/directionManager/updateNewDirections/" + airline.name(), String.class);
     }
 }
