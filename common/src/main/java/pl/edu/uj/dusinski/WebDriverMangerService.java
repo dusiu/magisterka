@@ -4,6 +4,8 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.PreDestroy;
 import java.util.ArrayList;
@@ -11,17 +13,17 @@ import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 
 public class WebDriverMangerService {
+    private static final Logger Log = LoggerFactory.getLogger(WebDriverMangerService.class);
 
     private int MAXIMUM_CAPACITY = 8;
     private BlockingQueue<WebDriver> webDrivers = new ArrayBlockingQueue<>(MAXIMUM_CAPACITY);
-    private final String phantomPath = System.getProperty("user.dir") + "\\common\\src\\main\\resources\\phantomjs.exe";
-    private final String chromePath = System.getProperty("user.dir") + "\\common\\src\\main\\resources\\chromedriver.exe";
+    private final String chromePath = System.getProperty("user.dir") + "/../webapps/directionManager/WEB-INF/classes/chromeDriver.exe";
 
     public WebDriverMangerService(int webDriverNumber) {
         if (webDriverNumber > 0) {
             this.webDrivers = new ArrayBlockingQueue<>(webDriverNumber);
         }
-        System.setProperty("phantomjs.binary.path", phantomPath);
+        Log.info("chrome path:" + chromePath);
         System.setProperty("webdriver.chrome.driver", chromePath);
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.setHeadless(true);

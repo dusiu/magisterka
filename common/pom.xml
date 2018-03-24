@@ -9,8 +9,8 @@
         <artifactId>magisterka</artifactId>
         <version>1.0-SNAPSHOT</version>
     </parent>
+    <packaging>jar</packaging>
 
     <artifactId>common</artifactId>
 
-    
 </project>

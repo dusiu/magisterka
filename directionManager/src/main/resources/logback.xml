@@ -3,7 +3,7 @@
     <appender name="ROLLING" class="ch.qos.logback.core.rolling.RollingFileAppender">
         <file>../logs/DirectionManager.log</file>
         <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>../logs/DirectionManager-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <fileNamePattern>../logs/directionManager/DirectionManager-%d{yyyy-MM-dd}.%i.log</fileNamePattern>
             <maxFileSize>10MB</maxFileSize>
             <maxHistory>30</maxHistory>
             <totalSizeCap>1GB</totalSizeCap>
