@@ -37,6 +37,7 @@ public class DirectionUpdaterService {
         }
         directionRepository.saveAll(directions);
         Log.info("There are {} new direction saved into database", directions.size());
+        refreshDetailsRepository.save(new DirectionRefreshDetails(LocalDateTime.now(), directions.size(), airline));
         directions.clear();
     }
 
