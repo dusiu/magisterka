@@ -3,50 +3,55 @@
     <title>Index</title>
     <script th:src="@{/jquery.min.js}"></script>
     <script th:src="@{/bootstrap.min.js}"></script>
+    <script th:src="@{/loader.js}"></script>
     <link rel="stylesheet" th:href="@{/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/background.css}"/>
+    <link rel="stylesheet" th:href="@{/loader.css}"/>
 </head>
 <body>
-
-<div class="jumbotron">
-    <div class="container text-center">
-        <h1>Flight Manager</h1>
-        <p>Wherever you want</p>
-    </div>
+<div class="cont" id="loader" style="display:none">
+    <div class="loader"></div>
 </div>
-
-<div class="container">
-    <h2>Choose where from you want to fly:</h2>
-    <div class="row">
-        <table class="table">
-            <thead>
-            <tr>
-                <th>Name</th>
-                <th>Full Name</th>
-                <th>Code</th>
-                <th></th>
-            </tr>
-            </thead>
-            <tbody>
-            <tr th:each="airport:${flyFromAirports}">
-                <td th:text="${airport.name}"></td>
-                <td th:text="${airport.fullName}"></td>
-                <td th:text="${airport.code}"></td>
-                <td>
-                    <form style="height: 10px;" th:action="'/flyFrom/'+${airport.id}">
-                        <input class="btn btn-info btn-sm" type="submit" value="Continue"/>
-                    </form>
-                </td>
-            </tr>
-            </tbody>
-        </table>
+<div id="page">
+    <div class="jumbotron">
+        <div class="container text-center">
+            <h1>Flight Manager</h1>
+            <p>Wherever you want</p>
+        </div>
     </div>
+    <div class="container">
+        <h2>Choose where from you want to fly:</h2>
+        <div class="row">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Full Name</th>
+                    <th>Code</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="airport:${flyFromAirports}">
+                    <td th:text="${airport.name}"></td>
+                    <td th:text="${airport.fullName}"></td>
+                    <td th:text="${airport.code}"></td>
+                    <td>
+                        <form style="height: 10px;" th:action="'/flyFrom/'+${airport.id}">
+                            <input class="btn btn-info btn-sm" type="submit" value="Continue"
+                                   onclick="return startLoader();"/>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer class="container-fluid text-center">
+        <h3>Master work created by Nikodem Dusinski</h3>
+    </footer>
 </div>
-
-<footer class="container-fluid text-center">
-    <h3>Master work created by Nikodem Dusinski</h3>
-</footer>
-
 
 </body>
 </html>

@@ -3,88 +3,92 @@
     <title>Flight Details</title>
     <script th:src="@{/jquery.min.js}"></script>
     <script th:src="@{/bootstrap.min.js}"></script>
+    <script th:src="@{/loader.js}"></script>
     <link rel="stylesheet" th:href="@{/bootstrap.min.css}"/>
     <link rel="stylesheet" th:href="@{/sticky-footer.css}"/>
     <link rel="stylesheet" th:href="@{/background.css}"/>
+    <link rel="stylesheet" th:href="@{/loader.css}"/>
 </head>
 <body>
+<div class="cont" id="loader" style="display:none">
+    <div class="loader"></div>
+</div>
+<div id="page">
+    <div class="jumbotron">
+        <div class="container text-center">
+            <h1>Flight Manager</h1>
+            <p>Wherever you want</p>
+        </div>
+    </div>
+    <div class="container">
+        <div th:if="${error!=null}">
+            <center><h2 th:text="${error}"></h2></center>
+        </div>
 
-<div class="jumbotron">
-    <div class="container text-center">
-        <h1>Flight Manager</h1>
-        <p>Wherever you want</p>
+        <div class="row" th:if="${error==null}">
+            <form th:action="@{/flyTo}" th:object="${request}" method="post">
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th><label for="fromCode">From: </label></th>
+                        <th><label for="toCode">To airport:</label></th>
+                        <th><label for="bothWay">Both way:</label></th>
+                        <th><label for="minDaysToStay">If both way: min. days to stay: </label></th>
+                        <th><label for="maxDaysToStay">max. days to stay: </label></th>
+                        <th></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td>
+                            <input class="form-control" type="text" id="fromCode" name="fromCode"
+                                   th:value="${currentAirport.code}" th:placeholder="${currentAirport.name}" readonly/>
+                        </td>
+                        <td>
+                            <select class="form-control" name="toCode" id="toCode">
+                                <div th:each="direction:${directions}">
+                                    <option th:field="*{toCode}" th:value="${direction.code}"
+                                            th:text="${direction.name}">
+                                    </option>
+                                </div>
+                            </select>
+                        </td>
+                        <td>
+                            <input type="checkbox" class="form-control" th:field="*{bothWay}" name="bothWay"
+                                   id="bothWay">
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" name="minDaysToStay"
+                                   id="minDaysToStay" value="5" min="1" max="30">
+                        </td>
+                        <td>
+                            <input type="number" class="form-control" name="maxDaysToStay"
+                                   id="maxDaysToStay" value="10" min="1" max="30">
+                        </td>
+                        <td>
+                            <button type="submit" class="btn btn-info" onclick="return startLoader();">Submit</button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <a class="btn btn-default" th:href="@{/}">Go Back</a>
+                        </td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+    </div>
+
+
+    <div class="footer container-fluid text-center">
+        <h3>Master work created by Nikodem Dusinski</h3>
     </div>
 </div>
-
-
-<div class="container">
-    <div th:if="${error!=null}">
-        <center><h2 th:text="${error}"></h2></center>
-    </div>
-
-    <div class="row" th:if="${error==null}">
-        <form th:action="@{/flyTo}" th:object="${request}" method="post">
-            <table class="table">
-                <thead>
-                <tr>
-                    <th><label for="fromCode">From: </label></th>
-                    <th><label for="toCode">To airport:</label></th>
-                    <th><label for="bothWay">Both way:</label></th>
-                    <th><label for="minDaysToStay">If both way: min. days to stay: </label></th>
-                    <th><label for="maxDaysToStay">max. days to stay: </label></th>
-                    <th></th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>
-                        <input class="form-control" type="text" id="fromCode" name="fromCode"
-                               th:value="${currentAirport.code}" th:placeholder="${currentAirport.name}" readonly/>
-                    </td>
-                    <td>
-                        <select class="form-control" name="toCode" id="toCode">
-                            <div th:each="direction:${directions}">
-                                <option th:field="*{toCode}" th:value="${direction.code}"
-                                        th:text="${direction.name}">
-                                </option>
-                            </div>
-                        </select>
-                    </td>
-                    <td>
-                        <input type="checkbox" class="form-control" th:field="*{bothWay}" name="bothWay" id="bothWay">
-                    </td>
-                    <td>
-                        <input type="number" class="form-control" name="minDaysToStay"
-                               id="minDaysToStay" value="5" min="1" max="30">
-                    </td>
-                    <td>
-                        <input type="number" class="form-control" name="maxDaysToStay"
-                               id="maxDaysToStay" value="10" min="1" max="30">
-                    </td>
-                    <td>
-                        <button type="submit" class="btn btn-info">Submit</button>
-                    </td>
-                </tr>
-                <tr>
-                    <td>
-                        <a class="btn btn-default" th:href="@{/}">Go Back</a>
-                    </td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                </tr>
-                </tbody>
-            </table>
-        </form>
-    </div>
-</div>
-
-
-<div class="footer container-fluid text-center">
-    <h3>Master work created by Nikodem Dusinski</h3>
-</div>
-
 </body>
 </html>
