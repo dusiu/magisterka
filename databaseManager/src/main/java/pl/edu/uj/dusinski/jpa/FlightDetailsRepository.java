@@ -10,7 +10,7 @@ import java.util.Optional;
 
 public interface FlightDetailsRepository extends MongoRepository<FlightDetails, String> {
 
-    List<FlightDetails> findByDirectionIn(List<Direction> directions);
+    List<FlightDetails> findByDirectionInAndFlyDateIsAfter(List<Direction> directions, LocalDate flyDate);
 
     Optional<FlightDetails> findTopByDirectionInAndFlyDateBetweenOrderByOriginalPrice(List<Direction> direction, LocalDate start, LocalDate end);
 

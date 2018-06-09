@@ -14,10 +14,11 @@ import java.util.concurrent.BlockingQueue;
 
 public class WebDriverMangerService {
     private static final Logger Log = LoggerFactory.getLogger(WebDriverMangerService.class);
+    private static final String BINARY_PATH = "C:\\chrome61\\61.0.3163.79\\chrome.exe";
 
     private int MAXIMUM_CAPACITY = 8;
     private BlockingQueue<WebDriver> webDrivers = new ArrayBlockingQueue<>(MAXIMUM_CAPACITY);
-    private final String chromePath = System.getProperty("user.dir") + "/../webapps/directionManager/WEB-INF/classes/chromeDriver.exe";
+    private final String chromePath = System.getProperty("user.dir") + "\\common\\src\\main\\resources\\chromedriver.exe";
 
     public WebDriverMangerService(int webDriverNumber) {
         if (webDriverNumber > 0) {
@@ -27,7 +28,9 @@ public class WebDriverMangerService {
         System.setProperty("webdriver.chrome.driver", chromePath);
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.setHeadless(true);
+        chromeOptions.setProxy(null);
         chromeOptions.addArguments("user-agent=user_agent");
+        chromeOptions.setBinary(BINARY_PATH);
         for (int i = 0; i < webDriverNumber; i++) {
             WebDriver driver = new ChromeDriver(chromeOptions);
             webDrivers.add(driver);

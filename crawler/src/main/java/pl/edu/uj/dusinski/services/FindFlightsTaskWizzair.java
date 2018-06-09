@@ -13,6 +13,8 @@ import pl.edu.uj.dusinski.dao.FlightDetails;
 
 import java.time.LocalDate;
 import java.util.concurrent.Callable;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import static pl.edu.uj.dusinski.CurrencyResolverUtils.resolveCurrencyFromSymbol;
@@ -28,7 +30,7 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
     private final Direction direction;
     private final int daysToCheck;
     private final String infoClassName = "booking-flow__flight-select__chart__day__info";
-    private final int taskTimeout;
+    private final AtomicInteger taskTimeout;
 
     FindFlightsTaskWizzair(WebDriverMangerService webDriverMangerService,
                            JmsPublisher jmsPublisher,
@@ -40,7 +42,7 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
         this.jmsPublisher = jmsPublisher;
         this.direction = direction;
         this.daysToCheck = daysToCheck;
-        this.taskTimeout = taskTimeout * 1000;
+        this.taskTimeout = new AtomicInteger(taskTimeout);
     }
 
     @Override
@@ -51,12 +53,13 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
         } catch (InterruptedException e) {
             Log.error("Error during getting webdriver", e);
         }
+        AtomicBoolean shouldWaitForInterrupt = new AtomicBoolean();
         Log.info("Checking url {}", url);
-        Thread t = new Thread(() -> findFlightDetails(webDriver.get()), Thread.currentThread().getName());
+        Thread t = new Thread(() -> findFlightDetails(webDriver.get(), taskTimeout, shouldWaitForInterrupt), Thread.currentThread().getName());
         t.start();
-        try {
-            t.join(taskTimeout);
-        } catch (InterruptedException e) {
+        waitForJoin(t);
+        if (shouldWaitForInterrupt.get()) {
+            waitForJoin(t);
         }
         if (t.isAlive()) {
             Log.error("Timeout on loading page " + url);
@@ -67,18 +70,33 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
         return null;
     }
 
-    private void findFlightDetails(WebDriver webDriver) {
+    private void waitForJoin(Thread t) {
+        try {
+            t.join(taskTimeout.get());
+        } catch (InterruptedException e) {
+        }
+    }
+
+    private void findFlightDetails(WebDriver webDriver, AtomicInteger taskTimeout, AtomicBoolean shouldWaitForInterrupt) {
+        long start = System.currentTimeMillis();
         webDriver.manage().deleteAllCookies();
         webDriver.get(url);
-
+        int loadingTimeout = taskTimeout.get() * 10;
         while (webDriver.findElements(By.className(infoClassName)).isEmpty()) {
-            Log.debug("There is no data in {} yet, waiting...", direction.getId());
             waitForWebsite(webDriver);
+            Log.debug("There is no data in {} yet, waiting...", direction.getId());
         }
         while (webDriver.findElements(By.className(infoClassName)).size() < daysToCheck) {
+            if (webDriver.findElements(By.className(infoClassName)).size() > 0 && taskTimeout.get() != loadingTimeout) {
+                taskTimeout.set(loadingTimeout);
+                shouldWaitForInterrupt.set(true);
+            }
+            Log.debug("Waiting for {} days, currently {}, {}", daysToCheck,
+                    webDriver.findElements(By.className(infoClassName)).size(), direction.getId());
             clickForNext(webDriver);
         }
         waitForWebsite(webDriver);
+        Log.info("Took {} ms to load all details, {}", System.currentTimeMillis() - start, direction.getId());
         int directionNo = 0;
         for (int i = 0; i < webDriver.findElements(By.className(infoClassName)).size(); i++) {
             try {
@@ -105,13 +123,35 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
     }
 
     private void clickForNext(WebDriver webDriver) {
+        waitForWebsite(webDriver);
         WebElement nextButton = webDriver.findElement(By.cssSelector("i.icon.icon__arrow--toright--pink")).findElement(By.xpath(".."));
         Actions actions = new Actions(webDriver);
         actions.moveToElement(nextButton).click().perform();
     }
 
     private void waitForWebsite(WebDriver webDriver) {
-        new WebDriverWait(webDriver, 30).until((ExpectedCondition<Boolean>) wd ->
-                ((JavascriptExecutor) wd).executeScript("return document.readyState").equals("complete"));
+        boolean completed;
+        do {
+            completed = new WebDriverWait(webDriver, 30).until((ExpectedCondition<Boolean>) wd ->
+                    ((JavascriptExecutor) wd).executeScript("return document.readyState").equals("complete"))
+                    && !containLoader(webDriver);
+        } while (!completed);
+    }
+
+    private boolean containLoader(WebDriver webDriver) {
+        while (true) {
+            try {
+                WebElement element = webDriver.findElement(By.className("booking-flow__flight-select__chart"));
+                if (!element.getAttribute("class").contains("loader-combined")) {
+                    break;
+                }
+            } catch (Exception ex) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                }
+            }
+        }
+        return false;
     }
 }

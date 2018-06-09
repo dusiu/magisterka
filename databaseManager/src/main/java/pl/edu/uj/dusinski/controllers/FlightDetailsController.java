@@ -46,7 +46,7 @@ public class FlightDetailsController {
     public String findWhereFromCanFly() {
         Log.info("Returning fly from directions");
         return gson.toJson(
-                flightDetailsRepository.findByDirectionIn(directionRepository.findAll()).stream()
+                flightDetailsRepository.findByDirectionInAndFlyDateIsAfter(directionRepository.findAll(), LocalDate.now()).stream()
                         .map(v -> v.getDirection().getFromCode())
                         .distinct()
                         .map(v -> airportDetailsRepository.findByCode(v).get(0))
@@ -78,7 +78,7 @@ public class FlightDetailsController {
             directions = directionRepository.findByFromCodeAndToCode(request.getFromCode(), request.getToCode());
         }
 
-        List<FlightDetails> flightDetails = flightDetailsRepository.findByDirectionIn(directions);
+        List<FlightDetails> flightDetails = flightDetailsRepository.findByDirectionInAndFlyDateIsAfter(directions, LocalDate.now());
         if (!request.isBothWay()) {
             return gson.toJson(flightDetails);
         }

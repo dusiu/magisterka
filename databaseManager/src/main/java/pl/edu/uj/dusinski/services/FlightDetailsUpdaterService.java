@@ -22,7 +22,7 @@ public class FlightDetailsUpdaterService {
     }
 
     public void updateFlightDetails(FlightDetails flightDetails) {
-        if (atomicInteger.incrementAndGet() == 500) {
+        if (atomicInteger.incrementAndGet() % 500 == 0) {
             Log.info("Added 500 new flight details");
         }
         flightDetailsRepository.save(flightDetails);
