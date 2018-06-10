@@ -19,6 +19,7 @@ public class WebDriverMangerService {
     private int MAXIMUM_CAPACITY = 8;
     private BlockingQueue<WebDriver> webDrivers = new ArrayBlockingQueue<>(MAXIMUM_CAPACITY);
     private final String chromePath = System.getProperty("user.dir") + "\\common\\src\\main\\resources\\chromedriver.exe";
+    private ChromeOptions chromeOptions;
 
     public WebDriverMangerService(int webDriverNumber) {
         if (webDriverNumber > 0) {
@@ -32,9 +33,12 @@ public class WebDriverMangerService {
         chromeOptions.addArguments("user-agent=user_agent");
         chromeOptions.setBinary(BINARY_PATH);
         for (int i = 0; i < webDriverNumber; i++) {
-            WebDriver driver = new ChromeDriver(chromeOptions);
-            webDrivers.add(driver);
+            webDrivers.add(startWebDriver());
         }
+    }
+
+    private ChromeDriver startWebDriver() {
+        return new ChromeDriver(chromeOptions);
     }
 
     public WebDriver getFreeWebDriver() throws InterruptedException {
@@ -43,6 +47,10 @@ public class WebDriverMangerService {
 
     private WebDriver getWebDriver() throws InterruptedException {
         WebDriver driver = webDrivers.take();
+        return openNewTab(driver);
+    }
+
+    private WebDriver openNewTab(WebDriver driver) {
         ((JavascriptExecutor) driver).executeScript("window.open()");
         ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
         driver.switchTo().window(tabs.get(1));
@@ -50,10 +58,17 @@ public class WebDriverMangerService {
     }
 
     public void returnWebDriver(WebDriver driver) {
-        driver.close();
         ArrayList<String> tabs = new ArrayList<>(driver.getWindowHandles());
+        driver.switchTo().window(tabs.get(1));
+        driver.close();
         driver.switchTo().window(tabs.get(0));
         webDrivers.add(driver);
+    }
+
+    public void restartInterruptedWebDriver(WebDriver webDriver) {
+        webDriver.quit();
+        webDriver = openNewTab(startWebDriver());
+        webDrivers.add(webDriver);
     }
 
     @PreDestroy
@@ -65,5 +80,4 @@ public class WebDriverMangerService {
             }
         }
     }
-
 }

@@ -76,10 +76,6 @@ public class CurrencyRatioProviderService implements Function<String, Double> {
         return 1 / (Double.valueOf(usdRatio) * usdPlnRatio);
     }
 
-    private Double convertUsdRatioToPlnRatio(String usdRatio) {
-        return currencyRatio.get("USD") / Double.valueOf(usdRatio);
-    }
-
     private String resolveCurrencyName(String name) {
         return name.replace("USD/", "");
     }

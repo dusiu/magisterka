@@ -48,46 +48,45 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
     @Override
     public Void call() {
         AtomicReference<WebDriver> webDriver = new AtomicReference<>();
+        AtomicBoolean shouldWaitForInterrupt = new AtomicBoolean();
+        Thread t = new Thread();
         try {
             webDriver.set(webDriverMangerService.getFreeWebDriver());
-        } catch (InterruptedException e) {
-            Log.error("Error during getting webdriver", e);
-        }
-        AtomicBoolean shouldWaitForInterrupt = new AtomicBoolean();
-        Log.info("Checking url {}", url);
-        Thread t = new Thread(() -> findFlightDetails(webDriver.get(), taskTimeout, shouldWaitForInterrupt), Thread.currentThread().getName());
-        t.start();
-        waitForJoin(t);
-        if (shouldWaitForInterrupt.get()) {
+            Log.info("Checking url {}", url);
+            t = new Thread(() -> findFlightDetails(webDriver.get(), taskTimeout, shouldWaitForInterrupt), Thread.currentThread().getName());
+            t.start();
             waitForJoin(t);
+            if (shouldWaitForInterrupt.get()) {
+                waitForJoin(t);
+            }
+        } catch (Exception e) {
+            Log.error("Error during executing wizzair task", e);
+        } finally {
+            if (t.isAlive()) {
+                Log.error("Timeout on loading page " + url);
+                t.interrupt();
+            }
         }
-        if (t.isAlive()) {
-            Log.error("Timeout on loading page " + url);
-            t.interrupt();
-        }
-        webDriverMangerService.returnWebDriver(webDriver.get());
+        webDriverMangerService.restartInterruptedWebDriver(webDriver.get());
         logTaskFinished();
         return null;
     }
 
-    private void waitForJoin(Thread t) {
-        try {
-            t.join(taskTimeout.get());
-        } catch (InterruptedException e) {
-        }
+    private void waitForJoin(Thread t) throws InterruptedException {
+        t.join(taskTimeout.get());
     }
 
     private void findFlightDetails(WebDriver webDriver, AtomicInteger taskTimeout, AtomicBoolean shouldWaitForInterrupt) {
         long start = System.currentTimeMillis();
         webDriver.manage().deleteAllCookies();
         webDriver.get(url);
-        int loadingTimeout = taskTimeout.get() * 10;
+        int loadingTimeout = taskTimeout.get() * 2;
         while (webDriver.findElements(By.className(infoClassName)).isEmpty()) {
             waitForWebsite(webDriver);
             Log.debug("There is no data in {} yet, waiting...", direction.getId());
         }
         while (webDriver.findElements(By.className(infoClassName)).size() < daysToCheck) {
-            if (webDriver.findElements(By.className(infoClassName)).size() > 0 && taskTimeout.get() != loadingTimeout) {
+            if (webDriver.findElements(By.className(infoClassName)).size() > 7 && taskTimeout.get() != loadingTimeout) {
                 taskTimeout.set(loadingTimeout);
                 shouldWaitForInterrupt.set(true);
             }
@@ -134,8 +133,13 @@ public class FindFlightsTaskWizzair implements Callable<Void> {
         do {
             completed = new WebDriverWait(webDriver, 30).until((ExpectedCondition<Boolean>) wd ->
                     ((JavascriptExecutor) wd).executeScript("return document.readyState").equals("complete"))
-                    && !containLoader(webDriver);
+                    && !containLoader(webDriver)
+                    && buttonIsPresent(webDriver);
         } while (!completed);
+    }
+
+    private boolean buttonIsPresent(WebDriver webDriver) {
+        return !webDriver.findElements(By.cssSelector("i.icon.icon__arrow--toright--pink")).isEmpty();
     }
 
     private boolean containLoader(WebDriver webDriver) {

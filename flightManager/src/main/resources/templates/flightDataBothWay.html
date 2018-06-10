@@ -44,7 +44,7 @@
                         <td th:text="${flight.from.direction.airline}"></td>
                         <td th:text="${flight.from.flyDate}"></td>
                         <td th:text="${#temporals.dayOfWeekName(flight.from.flyDate)}"></td>
-                        <td th:text="${#numbers.formatDecimal(flight.to.originalPrice,0,2)+' '+flight.to.currency}"></td>
+                        <td th:text="${#numbers.formatDecimal(flight.from.originalPrice,0,2)+' '+flight.from.currency}"></td>
                         <td th:text="${#numbers.formatDecimal(flight.from.plnPrice,0,2)+' PLN'}"></td>
                         <td></td>
                         <td>

@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import pl.edu.uj.dusinski.dao.Airline;
 import pl.edu.uj.dusinski.dao.AirportDetails;
 import pl.edu.uj.dusinski.dao.FlightDetailsRequest;
-import pl.edu.uj.dusinski.services.CurrencyRatioProviderService;
 import pl.edu.uj.dusinski.services.FlightDataChooserService;
 import pl.edu.uj.dusinski.services.FlightDataProviderService;
 
@@ -21,7 +20,7 @@ import java.util.List;
 
 @Controller
 public class FlightsController {
-    private static final Logger Log = LoggerFactory.getLogger(CurrencyRatioProviderService.class);
+    private static final Logger Log = LoggerFactory.getLogger(FlightsController.class);
 
     private final FlightDataProviderService flightDataProviderService;
     private final FlightDataChooserService flightDataChooserService;
